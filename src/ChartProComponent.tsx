@@ -16,7 +16,8 @@ import { createSignal, createEffect, onMount, Show, onCleanup, startTransition, 
 
 import {
   init, dispose, utils, Nullable, Chart, OverlayMode, Styles,
-  TooltipIconPosition, ActionType, PaneOptions, Indicator, DomPosition, FormatDateType
+  TooltipIconPosition, ActionType, PaneOptions, Indicator, DomPosition, FormatDateType,
+  FormatDateParams
 } from 'klinecharts'
 
 import lodashSet from 'lodash/set'
@@ -43,9 +44,9 @@ interface PrevSymbolPeriod {
 }
 
 function createIndicator (widget: Nullable<Chart>, indicatorName: string, isStack?: boolean, paneOptions?: PaneOptions): Nullable<string> {
-  if (indicatorName === 'VOL') {
-    paneOptions = { gap: { bottom: 2 }, ...paneOptions }
-  }
+  // if (indicatorName === 'VOL') {
+  //   paneOptions = { state: { bottom: 2 }, ...paneOptions }
+  // }
   return widget?.createIndicator({
     name: indicatorName,
     // @ts-expect-error
@@ -179,38 +180,38 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   onMount(() => {
     window.addEventListener('resize', documentResize)
     setWidget(init(widgetRef!, {
-      customApi: {
-        formatDate: (dateTimeFormat: Intl.DateTimeFormat, timestamp, format: string, type: FormatDateType) => {
+      formatter: {
+        formatDate: (params: FormatDateParams) => {
           const p = period()
           switch (p.timespan) {
             case 'minute': {
-              if (type === FormatDateType.XAxis) {
-                return utils.formatDate(dateTimeFormat, timestamp, 'HH:mm')
+              if (params.type === 'xAxis') {
+                return utils.formatDate(params.dateTimeFormat, params.timestamp, 'HH:mm')
               }
-              return utils.formatDate(dateTimeFormat, timestamp, 'YYYY-MM-DD HH:mm')
+              return utils.formatDate(params.dateTimeFormat, params.timestamp, 'YYYY-MM-DD HH:mm')
             }
             case 'hour': {
-              if (type === FormatDateType.XAxis) {
-                return utils.formatDate(dateTimeFormat, timestamp, 'MM-DD HH:mm')
+              if (params.type === 'xAxis') {
+                return utils.formatDate(params.dateTimeFormat, params.timestamp, 'MM-DD HH:mm')
               }
-              return utils.formatDate(dateTimeFormat, timestamp, 'YYYY-MM-DD HH:mm')
+              return utils.formatDate(params.dateTimeFormat, params.timestamp, 'YYYY-MM-DD HH:mm')
             }
             case 'day':
-            case 'week': return utils.formatDate(dateTimeFormat, timestamp, 'YYYY-MM-DD')
+            case 'week': return utils.formatDate(params.dateTimeFormat, params.timestamp, 'YYYY-MM-DD')
             case 'month': {
-              if (type === FormatDateType.XAxis) {
-                return utils.formatDate(dateTimeFormat, timestamp, 'YYYY-MM')
+              if (params.type === 'xAxis') {
+                return utils.formatDate(params.dateTimeFormat, params.timestamp, 'YYYY-MM')
               }
-              return utils.formatDate(dateTimeFormat, timestamp, 'YYYY-MM-DD')
+              return utils.formatDate(params.dateTimeFormat, params.timestamp, 'YYYY-MM-DD')
             }
             case 'year': {
-              if (type === FormatDateType.XAxis) {
-                return utils.formatDate(dateTimeFormat, timestamp, 'YYYY')
+              if (params.type === 'xAxis') {
+                return utils.formatDate(params.dateTimeFormat, params.timestamp, 'YYYY')
               }
-              return utils.formatDate(dateTimeFormat, timestamp, 'YYYY-MM-DD')
+              return utils.formatDate(params.dateTimeFormat, params.timestamp, 'YYYY-MM-DD')
             }
           }
-          return utils.formatDate(dateTimeFormat, timestamp, 'YYYY-MM-DD HH:mm')
+          return utils.formatDate(params.dateTimeFormat, params.timestamp, 'YYYY-MM-DD HH:mm')
         }
       }
     }))
