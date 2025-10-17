@@ -14,9 +14,9 @@
 
 import { render } from 'solid-js/web'
 
-import { utils, Nullable, DeepPartial, Styles } from 'klinecharts'
+import { utils, Nullable, DeepPartial, Styles, Chart, dispose } from 'klinecharts'
 
-import ChartProComponent from './ChartProComponent'
+import ChartProComponent, { widget } from './ChartProComponent'
 
 import { SymbolInfo, Period, ChartPro, ChartProOptions } from './types'
 
@@ -79,6 +79,13 @@ export default class KLineChartPro implements ChartPro {
 
   private _chartApi: Nullable<ChartPro> = null
 
+  destroy() {
+    if (this._container)
+      dispose(this._container!)
+
+    this._container = null
+    this._chartApi = null
+  }
 
   setTheme (theme: string): void {
     this._container?.setAttribute('data-theme', theme)
@@ -127,5 +134,14 @@ export default class KLineChartPro implements ChartPro {
 
   getPeriod (): Period {
     return this._chartApi!.getPeriod()
+  }
+  getInstanceApi(): Nullable<Chart> {
+    return widget()
+  }
+  resize(): void {
+    widget()!.resize()
+  }
+  dispose(): void {
+    this.destroy()
   }
 }

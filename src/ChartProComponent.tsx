@@ -65,9 +65,10 @@ function createIndicator (widget: Nullable<Chart>, indicatorName: string, isStac
   }, isStack, paneOptions) ?? null
 }
 
+export const [ widget, setWidget ] = createSignal<Nullable<Chart>>(null)
+
 const ChartProComponent: Component<ChartProComponentProps> = props => {
   let widgetRef: HTMLDivElement | undefined = undefined
-  let widget: Nullable<Chart> = null
 
   let priceUnitDom: HTMLElement
 
@@ -105,7 +106,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     setTheme,
     getTheme: () => theme(),
     setStyles,
-    getStyles: () => widget!.getStyles(),
+    getStyles: () => widget()!.getStyles(),
     setLocale,
     getLocale: () => locale(),
     setTimezone: (timezone: string) => { setTimezone({ key: timezone, text: translateTimezone(props.timezone, locale()) }) },
@@ -113,11 +114,14 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     setSymbol,
     getSymbol: () => symbol(),
     setPeriod,
-    getPeriod: () => period()
+    getPeriod: () => period(),
+    getInstanceApi: () => widget(),
+    resize: () => widget()?.resize(),
+    dispose: () => {}
   })
 
   const documentResize = () => {
-    widget?.resize()
+    widget()?.resize()
   }
 
   const adjustFromTo = (period: Period, toTimestamp: number, count: number) => {
@@ -174,7 +178,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
 
   onMount(() => {
     window.addEventListener('resize', documentResize)
-    widget = init(widgetRef!, {
+    setWidget(init(widgetRef!, {
       customApi: {
         formatDate: (dateTimeFormat: Intl.DateTimeFormat, timestamp, format: string, type: FormatDateType) => {
           const p = period()
@@ -209,10 +213,10 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
           return utils.formatDate(dateTimeFormat, timestamp, 'YYYY-MM-DD HH:mm')
         }
       }
-    })
+    }))
 
-    if (widget) {
-      const watermarkContainer = widget.getDom('candle_pane', DomPosition.Main)
+    if (widget()) {
+      const watermarkContainer = widget()!.getDom('candle_pane', DomPosition.Main)
       if (watermarkContainer) {
         let watermark = document.createElement('div')
         watermark.className = 'klinecharts-pro-watermark'
@@ -225,49 +229,49 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         watermarkContainer.appendChild(watermark)
       }
 
-      const priceUnitContainer = widget.getDom('candle_pane', DomPosition.YAxis)
+      const priceUnitContainer = widget()!.getDom('candle_pane', DomPosition.YAxis)
       priceUnitDom = document.createElement('span')
       priceUnitDom.className = 'klinecharts-pro-price-unit'
       priceUnitContainer?.appendChild(priceUnitDom)
     }
 
     mainIndicators().forEach(indicator => {
-      createIndicator(widget, indicator, true, { id: 'candle_pane' })
+      createIndicator(widget(), indicator, true, { id: 'candle_pane' })
     })
     const subIndicatorMap = {}
     props.subIndicators!.forEach(indicator => {
-      const paneId = createIndicator(widget, indicator, true)
+      const paneId = createIndicator(widget(), indicator, true)
       if (paneId) {
         // @ts-expect-error
         subIndicatorMap[indicator] = paneId
       }
     })
     setSubIndicators(subIndicatorMap)
-    widget?.loadMore(timestamp => {
+    widget()?.loadMore(timestamp => {
       loading = true
       const get = async () => {
         const p = period()
         const [to] = adjustFromTo(p, timestamp!, 1)
         const [from] = adjustFromTo(p, to, 500)
         const kLineDataList = await props.datafeed.getHistoryKLineData(symbol(), p, from, to)
-        widget?.applyMoreData(kLineDataList, kLineDataList.length > 0)
+        widget()?.applyMoreData(kLineDataList, kLineDataList.length > 0)
         loading = false
       }
       get()
     })
-    widget?.subscribeAction(ActionType.OnTooltipIconClick, (data) => {
+    widget()?.subscribeAction(ActionType.OnTooltipIconClick, (data) => {
       if (data.indicatorName) {
         switch (data.iconId) {
           case 'visible': {
-            widget?.overrideIndicator({ name: data.indicatorName, visible: true }, data.paneId)
+            widget()?.overrideIndicator({ name: data.indicatorName, visible: true }, data.paneId)
             break
           }
           case 'invisible': {
-            widget?.overrideIndicator({ name: data.indicatorName, visible: false }, data.paneId)
+            widget()?.overrideIndicator({ name: data.indicatorName, visible: false }, data.paneId)
             break
           }
           case 'setting': {
-            const indicator = widget?.getIndicatorByPaneId(data.paneId, data.indicatorName) as Indicator
+            const indicator = widget()?.getIndicatorByPaneId(data.paneId, data.indicatorName) as Indicator
             setIndicatorSettingModalParams({
               visible: true, indicatorName: data.indicatorName, paneId: data.paneId, calcParams: indicator.calcParams
             })
@@ -276,12 +280,12 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
           case 'close': {
             if (data.paneId === 'candle_pane') {
               const newMainIndicators = [...mainIndicators()]
-              widget?.removeIndicator('candle_pane', data.indicatorName)
+              widget()?.removeIndicator('candle_pane', data.indicatorName)
               newMainIndicators.splice(newMainIndicators.indexOf(data.indicatorName), 1)
               setMainIndicators(newMainIndicators)
             } else {
               const newIndicators = { ...subIndicators() }
-              widget?.removeIndicator(data.paneId, data.indicatorName)
+              widget()?.removeIndicator(data.paneId, data.indicatorName)
               // @ts-expect-error
               delete newIndicators[data.indicatorName]
               setSubIndicators(newIndicators)
@@ -305,7 +309,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     } else {
       priceUnitDom.style.display = 'none'
     }
-    widget?.setPriceVolumePrecision(s?.pricePrecision ?? 2, s?.volumePrecision ?? 0)
+    widget()?.setPriceVolumePrecision(s?.pricePrecision ?? 2, s?.volumePrecision ?? 0)
   })
 
   createEffect((prev?: PrevSymbolPeriod) => {
@@ -320,9 +324,9 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       const get = async () => {
         const [from, to] = adjustFromTo(p, new Date().getTime(), 500)
         const kLineDataList = await props.datafeed.getHistoryKLineData(s, p, from, to)
-        widget?.applyNewData(kLineDataList, kLineDataList.length > 0)
+        widget()?.applyNewData(kLineDataList, kLineDataList.length > 0)
         props.datafeed.subscribe(s, p, data => {
-          widget?.updateData(data)
+          widget()?.updateData(data)
         })
         loading = false
         setLoadingVisible(false)
@@ -335,9 +339,9 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
 
   createEffect(() => {
     const t = theme()
-    widget?.setStyles(t)
+    widget()?.setStyles(t)
     const color = t === 'dark' ? '#929AA5' : '#76808F'
-    widget?.setStyles({
+    widget()?.setStyles({
       indicator: {
         tooltip: {
           icons: [
@@ -424,17 +428,17 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   })
 
   createEffect(() => {
-    widget?.setLocale(locale())
+    widget()?.setLocale(locale())
   })
 
   createEffect(() => {
-    widget?.setTimezone(timezone().key)
+    widget()?.setTimezone(timezone().key)
   })
 
   createEffect(() => {
     if (styles()) {
-      widget?.setStyles(styles())
-      setWidgetDefaultStyles(lodashClone(widget!.getStyles()))
+      widget()?.setStyles(styles())
+      setWidgetDefaultStyles(lodashClone(widget()!.getStyles()))
     }
   })
 
@@ -457,10 +461,10 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
           onMainIndicatorChange={data => {
             const newMainIndicators = [...mainIndicators()]
             if (data.added) {
-              createIndicator(widget, data.name, true, { id: 'candle_pane' })
+              createIndicator(widget(), data.name, true, { id: 'candle_pane' })
               newMainIndicators.push(data.name)
             } else {
-              widget?.removeIndicator('candle_pane', data.name)
+              widget()?.removeIndicator('candle_pane', data.name)
               newMainIndicators.splice(newMainIndicators.indexOf(data.name), 1)
             }
             setMainIndicators(newMainIndicators)
@@ -468,14 +472,14 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
           onSubIndicatorChange={data => {
             const newSubIndicators = { ...subIndicators() }
             if (data.added) {
-              const paneId = createIndicator(widget, data.name)
+              const paneId = createIndicator(widget(), data.name)
               if (paneId) {
                 // @ts-expect-error
                 newSubIndicators[data.name] = paneId
               }
             } else {
               if (data.paneId) {
-                widget?.removeIndicator(data.paneId, data.name)
+                widget()?.removeIndicator(data.paneId, data.name)
                 // @ts-expect-error
                 delete newSubIndicators[data.name]
               }
@@ -494,10 +498,10 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       <Show when={settingModalVisible()}>
         <SettingModal
           locale={props.locale}
-          currentStyles={utils.clone(widget!.getStyles())}
+          currentStyles={utils.clone(widget()!.getStyles())}
           onClose={() => { setSettingModalVisible(false) }}
           onChange={style => {
-            widget?.setStyles(style)
+            widget()?.setStyles(style)
           }}
           onRestoreDefault={(options: SelectDataSourceItem[]) => {
             const style = {}
@@ -505,7 +509,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
               const key = option.key
               lodashSet(style, key, utils.formatValue(widgetDefaultStyles(), key))
             })
-            widget?.setStyles(style)
+            widget()?.setStyles(style)
           }}
         />
       </Show>
@@ -523,7 +527,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
           onClose={() => { setIndicatorSettingModalParams({ visible: false, indicatorName: '', paneId: '', calcParams: [] }) }}
           onConfirm={(params)=> {
             const modalParams = indicatorSettingModalParams()
-            widget?.overrideIndicator({ name: modalParams.indicatorName, calcParams: params }, modalParams.paneId)
+            widget()?.overrideIndicator({ name: modalParams.indicatorName, calcParams: params }, modalParams.paneId)
           }}
         />
       </Show>
@@ -536,7 +540,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         onMenuClick={async () => {
           try {
             await startTransition(() => setDrawingBarVisible(!drawingBarVisible()))
-            widget?.resize()
+            widget()?.resize()
           } catch (e) {}    
         }}
         onSymbolClick={() => { setSymbolSearchModalVisible(!symbolSearchModalVisible()) }}
@@ -546,7 +550,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         onSettingClick={() => { setSettingModalVisible((visible => !visible)) }}
         onScreenshotClick={() => {
           if (widget) {
-            const url = widget.getConvertPictureUrl(true, 'jpeg', props.theme === 'dark' ? '#151517' : '#ffffff')
+            const url = widget()!.getConvertPictureUrl(true, 'jpeg', props.theme === 'dark' ? '#151517' : '#ffffff')
             setScreenshotUrl(url)
           }
         }}
@@ -559,11 +563,11 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         <Show when={drawingBarVisible()}>
           <DrawingBar
             locale={props.locale}
-            onDrawingItemClick={overlay => { widget?.createOverlay(overlay) }}
-            onModeChange={mode => { widget?.overrideOverlay({ mode: mode as OverlayMode }) }}
-            onLockChange={lock => { widget?.overrideOverlay({ lock }) }}
-            onVisibleChange={visible => { widget?.overrideOverlay({ visible }) }}
-            onRemoveClick={(groupId) => { widget?.removeOverlay({ groupId }) }}/>
+            onDrawingItemClick={overlay => { widget()?.createOverlay(overlay) }}
+            onModeChange={mode => { widget()?.overrideOverlay({ mode: mode as OverlayMode }) }}
+            onLockChange={lock => { widget()?.overrideOverlay({ lock }) }}
+            onVisibleChange={visible => { widget()?.overrideOverlay({ visible }) }}
+            onRemoveClick={(groupId) => { widget()?.removeOverlay({ groupId }) }}/>
         </Show>
         <div
           ref={widgetRef}
