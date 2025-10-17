@@ -16,7 +16,7 @@ import { createSignal, createEffect, onMount, Show, onCleanup, startTransition, 
 
 import {
   init, dispose, utils, Nullable, Chart, OverlayMode, Styles,
-  TooltipIconPosition, ActionType, PaneOptions, Indicator, DomPosition, FormatDateType,
+  ActionType, PaneOptions, Indicator, DomPosition, FormatDateType,
   FormatDateParams
 } from 'klinecharts'
 
@@ -33,9 +33,11 @@ import {
 import { translateTimezone } from './widget/timezone-modal/data'
 
 import { SymbolInfo, Period, ChartProOptions, ChartPro } from './types'
+import ChartDataLoader from './DataLoader'
 
-export interface ChartProComponentProps extends Required<Omit<ChartProOptions, 'container'>> {
+export interface ChartProComponentProps extends Required<Omit<ChartProOptions, 'container' | 'datafeed'>> {
   ref: (chart: ChartPro) => void
+  dataloader: ChartDataLoader
 }
 
 interface PrevSymbolPeriod {
@@ -44,9 +46,9 @@ interface PrevSymbolPeriod {
 }
 
 function createIndicator (widget: Nullable<Chart>, indicatorName: string, isStack?: boolean, paneOptions?: PaneOptions): Nullable<string> {
-  // if (indicatorName === 'VOL') {
-  //   paneOptions = { state: { bottom: 2 }, ...paneOptions }
-  // }
+  if (indicatorName === 'VOL') {
+    paneOptions = { axis: { gap: { bottom: 2 } }, ...paneOptions }
+  }
   return widget?.createIndicator({
     name: indicatorName,
     // @ts-expect-error
@@ -217,7 +219,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     }))
 
     if (widget()) {
-      const watermarkContainer = widget()!.getDom('candle_pane', DomPosition.Main)
+      const watermarkContainer = widget()!.getDom('candle_pane', 'main')
       if (watermarkContainer) {
         let watermark = document.createElement('div')
         watermark.className = 'klinecharts-pro-watermark'
@@ -230,7 +232,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         watermarkContainer.appendChild(watermark)
       }
 
-      const priceUnitContainer = widget()!.getDom('candle_pane', DomPosition.YAxis)
+      const priceUnitContainer = widget()!.getDom('candle_pane', 'yAxis')
       priceUnitDom = document.createElement('span')
       priceUnitDom.className = 'klinecharts-pro-price-unit'
       priceUnitContainer?.appendChild(priceUnitDom)
@@ -248,19 +250,9 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       }
     })
     setSubIndicators(subIndicatorMap)
-    widget()?.loadMore(timestamp => {
-      loading = true
-      const get = async () => {
-        const p = period()
-        const [to] = adjustFromTo(p, timestamp!, 1)
-        const [from] = adjustFromTo(p, to, 500)
-        const kLineDataList = await props.datafeed.getHistoryKLineData(symbol(), p, from, to)
-        widget()?.applyMoreData(kLineDataList, kLineDataList.length > 0)
-        loading = false
-      }
-      get()
-    })
-    widget()?.subscribeAction(ActionType.OnTooltipIconClick, (data) => {
+    widget()?.setDataLoader(props.dataloader)
+
+    widget()?.subscribeAction('onCandleTooltipFeatureClick', (data) => {
       if (data.indicatorName) {
         switch (data.iconId) {
           case 'visible': {

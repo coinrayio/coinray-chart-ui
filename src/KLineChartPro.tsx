@@ -19,6 +19,7 @@ import { utils, Nullable, DeepPartial, Styles, Chart, dispose } from 'klinechart
 import ChartProComponent, { widget } from './ChartProComponent'
 
 import { SymbolInfo, Period, ChartPro, ChartProOptions } from './types'
+import ChartDataLoader from './DataLoader'
 
 const Logo = (
   <svg class="logo" viewBox="0 0 80 92">
@@ -40,6 +41,7 @@ export default class KLineChartPro implements ChartPro {
     }
     this._container.classList.add('klinecharts-pro')
     this._container.setAttribute('data-theme', options.theme ?? 'light')
+    const dataLoader = new ChartDataLoader(options.datafeed)
 
     render(
       () => (
@@ -69,7 +71,7 @@ export default class KLineChartPro implements ChartPro {
           timezone={options.timezone ?? 'Asia/Shanghai'}
           mainIndicators={options.mainIndicators ?? ['MA']}
           subIndicators={options.subIndicators ?? ['VOL']}
-          datafeed={options.datafeed}/>
+          dataloader={dataLoader}/>
       ),
       this._container
     )
