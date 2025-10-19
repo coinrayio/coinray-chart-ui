@@ -50,23 +50,26 @@ function createIndicator (widget: Nullable<Chart>, indicatorName: string, isStac
   if (indicatorName === 'VOL') {
     paneOptions = { axis: { gap: { bottom: 2 } }, ...paneOptions }
   }
-  return widget?.createIndicator({
-    name: indicatorName,
-    // @ts-expect-error
-    createTooltipDataSource: ({ indicator, defaultStyles }) => {
-      const icons = []
-      if (indicator.visible) {
-        icons.push(defaultStyles.tooltip.icons[1])
-        icons.push(defaultStyles.tooltip.icons[2])
-        icons.push(defaultStyles.tooltip.icons[3])
-      } else {
-        icons.push(defaultStyles.tooltip.icons[0])
-        icons.push(defaultStyles.tooltip.icons[2])
-        icons.push(defaultStyles.tooltip.icons[3])
-      }
-      return { icons }
-    }
-  }, isStack, paneOptions) ?? null
+  return widget?.createIndicator(indicatorName, isStack, paneOptions) ?? null
+  // return widget?.createIndicator({
+  //   name: indicatorName,
+  //   // @ts-expect-error
+  //   createTooltipDataSource: ({ indicator, defaultStyles }) => {
+  //     console.info('createTooltipDataSource 01', indicator)
+  //     console.info('createTooltipDataSource 02', defaultStyles)
+  //     const icons = []
+  //     if (indicator.visible) {
+  //       icons.push(defaultStyles.tooltip.icons[1])
+  //       icons.push(defaultStyles.tooltip.icons[2])
+  //       icons.push(defaultStyles.tooltip.icons[3])
+  //     } else {
+  //       icons.push(defaultStyles.tooltip.icons[0])
+  //       icons.push(defaultStyles.tooltip.icons[2])
+  //       icons.push(defaultStyles.tooltip.icons[3])
+  //     }
+  //     return { icons }
+  //   }
+  // }, isStack, paneOptions) ?? null
 }
 
 export const [ widget, setWidget ] = createSignal<Nullable<Chart>>(null)
@@ -133,6 +136,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     setWidget(init(widgetRef!, {
       formatter: {
         formatDate: (params: FormatDateParams) => {
+          // console.info('formatDate', params)
           const p = period()
           switch (p.type) {
             case 'minute': {
@@ -168,6 +172,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     }))
 
     if (widget()) {
+      console.info('ChartPro widget initialized')
       const watermarkContainer = widget()!.getDom('candle_pane', 'main')
       if (watermarkContainer) {
         let watermark = document.createElement('div')
@@ -185,6 +190,62 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       priceUnitDom = document.createElement('span')
       priceUnitDom.className = 'klinecharts-pro-price-unit'
       priceUnitContainer?.appendChild(priceUnitDom)
+
+      widget()?.subscribeAction('onCrosshairFeatureClick', (data) => {
+        console.info('onCrosshairFeatureClick', data)
+      })
+
+      widget()?.subscribeAction('onIndicatorTooltipFeatureClick', (data) => {
+        console.info('onIndicatorTooltipFeatureClick', data)
+      })
+
+      widget()?.subscribeAction('onCandleTooltipFeatureClick', (data) => {
+        console.info('onCandleTooltipFeatureClick', data)
+        // if (data.indicatorName) {
+        //   switch (data.iconId) {
+        //     case 'visible': {
+        //       widget()?.overrideIndicator({ name: data.indicatorName, visible: true }, data.paneId)
+        //       break
+        //     }
+        //     case 'invisible': {
+        //       widget()?.overrideIndicator({ name: data.indicatorName, visible: false }, data.paneId)
+        //       break
+        //     }
+        //     case 'setting': {
+        //       const indicator = widget()?.getIndicatorByPaneId(data.paneId, data.indicatorName) as Indicator
+        //       setIndicatorSettingModalParams({
+        //         visible: true, indicatorName: data.indicatorName, paneId: data.paneId, calcParams: indicator.calcParams
+        //       })
+        //       break
+        //     }
+        //     case 'close': {
+        //       if (data.paneId === 'candle_pane') {
+        //         const newMainIndicators = [...mainIndicators()]
+        //         widget()?.removeIndicator('candle_pane', data.indicatorName)
+        //         newMainIndicators.splice(newMainIndicators.indexOf(data.indicatorName), 1)
+        //         setMainIndicators(newMainIndicators)
+        //       } else {
+        //         const newIndicators = { ...subIndicators() }
+        //         widget()?.removeIndicator(data.paneId, data.indicatorName)
+        //         // @ts-expect-error
+        //         delete newIndicators[data.indicatorName]
+        //         setSubIndicators(newIndicators)
+        //       }
+        //     }
+        //   }
+        // }
+      })
+
+      const s = symbol()
+      if (s?.priceCurrency) {
+        priceUnitDom.innerHTML = s?.priceCurrency.toLocaleUpperCase()
+        priceUnitDom.style.display = 'flex'
+      } else {
+        priceUnitDom.style.display = 'none'
+      }
+      widget()?.setSymbol({ticker: s.ticker, pricePrecision: s?.pricePrecision ?? 2, volumePrecision: s?.volumePrecision ?? 0})
+      widget()?.setPeriod(period())
+      widget()?.setDataLoader(props.dataloader)
     }
 
     mainIndicators().forEach(indicator => {
@@ -199,52 +260,6 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       }
     })
     setSubIndicators(subIndicatorMap)
-    widget()?.setDataLoader(props.dataloader)
-
-    widget()?.subscribeAction('onCrosshairFeatureClick', (data) => {
-      console.info('onCrosshairFeatureClick', data)
-    })
-
-    widget()?.subscribeAction('onIndicatorTooltipFeatureClick', (data) => {
-      console.info('onIndicatorTooltipFeatureClick', data)
-    })
-
-    widget()?.subscribeAction('onCandleTooltipFeatureClick', (data) => {
-      console.info('onCandleTooltipFeatureClick', data)
-      // if (data.indicatorName) {
-      //   switch (data.iconId) {
-      //     case 'visible': {
-      //       widget()?.overrideIndicator({ name: data.indicatorName, visible: true }, data.paneId)
-      //       break
-      //     }
-      //     case 'invisible': {
-      //       widget()?.overrideIndicator({ name: data.indicatorName, visible: false }, data.paneId)
-      //       break
-      //     }
-      //     case 'setting': {
-      //       const indicator = widget()?.getIndicatorByPaneId(data.paneId, data.indicatorName) as Indicator
-      //       setIndicatorSettingModalParams({
-      //         visible: true, indicatorName: data.indicatorName, paneId: data.paneId, calcParams: indicator.calcParams
-      //       })
-      //       break
-      //     }
-      //     case 'close': {
-      //       if (data.paneId === 'candle_pane') {
-      //         const newMainIndicators = [...mainIndicators()]
-      //         widget()?.removeIndicator('candle_pane', data.indicatorName)
-      //         newMainIndicators.splice(newMainIndicators.indexOf(data.indicatorName), 1)
-      //         setMainIndicators(newMainIndicators)
-      //       } else {
-      //         const newIndicators = { ...subIndicators() }
-      //         widget()?.removeIndicator(data.paneId, data.indicatorName)
-      //         // @ts-expect-error
-      //         delete newIndicators[data.indicatorName]
-      //         setSubIndicators(newIndicators)
-      //       }
-      //     }
-      //   }
-      // }
-    })
   })
 
   onCleanup(() => {
@@ -252,16 +267,6 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     dispose(widgetRef!)
   })
 
-  createEffect(() => {
-    const s = symbol()
-    if (s?.priceCurrency) {
-      priceUnitDom.innerHTML = s?.priceCurrency.toLocaleUpperCase()
-      priceUnitDom.style.display = 'flex'
-    } else {
-      priceUnitDom.style.display = 'none'
-    }
-    widget()?.setSymbol({ticker: s.ticker, pricePrecision: s?.pricePrecision ?? 2, volumePrecision: s?.volumePrecision ?? 0})
-  })
 
   // createEffect((prev?: PrevSymbolPeriod) => {
   //   if (!props.dataloader.loading) {
