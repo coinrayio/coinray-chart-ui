@@ -76,35 +76,6 @@ function createIndicator (widget: Chart, indicatorName: string, isStack?: boolea
       }
     }}, isStack, paneOptions) ?? null
 
-  // if (!indi)
-  //   return null
-
-  // const _indi = widget.getIndicators({ id: indi, name: indicatorName, paneId: paneOptions?.id}).at(0)
-  // widget.overrideIndicator({
-  //   id: indi,
-  //   name: indicatorName,
-  //   createTooltipDataSource: (param) => {
-  //     const indiStyles = param.chart.getStyles().indicator
-  //     const features = indiStyles.tooltip.features
-  //     const icons: TooltipFeatureStyle[] = []
-  //     if (param.indicator.visible) {
-  //       icons.push(features[1])
-  //       icons.push(features[2])
-  //       icons.push(features[3])
-  //     } else {
-  //       icons.push(features[0])
-  //       icons.push(features[2])
-  //       icons.push(features[3])
-  //     }
-  //     return {
-  //       name: `${indicatorName}_${indi}`,
-  //       calcParamsText: indicatorName,
-  //       features: icons,
-  //       legends: []
-  //     }
-  //   }
-  // })
-
   return indi
 }
 
