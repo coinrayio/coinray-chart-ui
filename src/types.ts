@@ -42,8 +42,6 @@ export interface Datafeed {
 
 export interface ChartDataLoaderType extends DataLoader {
   searchSymbols (search?: string): Promise<SymbolInfo[]>
-  periodGetter: (getPeriod: () => Period) => void
-  symbolGetter: (getSymbol: () => Symbol) => void
   loading: boolean
 }
 

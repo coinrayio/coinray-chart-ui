@@ -41,12 +41,12 @@ export default class KLineChartPro implements ChartPro {
     }
     this._container.classList.add('klinecharts-pro')
     this._container.setAttribute('data-theme', options.theme ?? 'light')
-    const dataLoader = new ChartDataLoader(options.datafeed, () => options.period ?? options.periods![0], () => options.symbol)
+    const dataLoader = new ChartDataLoader(options.datafeed)
 
     render(
       () => (
         <ChartProComponent
-          ref={(chart: ChartPro) => { console.info('setting chart api', chart); this._chartApi = chart }}
+          ref={(chart: ChartPro) => { this._chartApi = chart }}
           styles={options.styles ?? {}}
           watermark={options.watermark ?? (Logo as Node)}
           theme={options.theme ?? 'light'}
@@ -68,18 +68,13 @@ export default class KLineChartPro implements ChartPro {
               { span: 1, type: 'year', text: 'Y' }
             ]
           }
-          timezone={options.timezone ?? 'Asia/Shanghai'}
+          timezone={options.timezone ?? 'Etc/UTC'}
           mainIndicators={options.mainIndicators ?? ['MA']}
           subIndicators={options.subIndicators ?? ['VOL']}
           dataloader={dataLoader}/>
       ),
       this._container
     )
-
-    console.info('chart api is set', this._chartApi)
-
-    // dataLoader.periodGetter = this.getPeriod
-    // dataLoader.symbolGetter = this.getSymbol
   }
 
   private _container: Nullable<HTMLElement>
