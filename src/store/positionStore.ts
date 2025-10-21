@@ -1,8 +1,9 @@
-import { Chart, Nullable, Overlay, OverlayEvent, Point } from 'klinecharts';
+import { Chart, Nullable, Overlay, OverlayEvent, Point, YAxis } from 'klinecharts';
 import { ExitType, OrderInfo, OrderModifyInfo, OrderResource, OrderType } from '../types';
 import { createSignal } from 'solid-js';
 import { currenttick } from './tickStore';
 import { instanceapi, symbol } from '../ChartProComponent';
+import { getPrecision } from '../helpers';
 // import { setOrderModalVisible } from './chartStateStore';
 // import { syntheticPausePlay } from './keyEventStore';
 
@@ -74,7 +75,7 @@ export const useOrder = () => {
    * @returns return a string of profit or loss in pips or points
    */
   const calcPL = (middle:number, dp:number, usereal: boolean = false, buysell: 'buy'|'sell' = 'buy'): string => {
-    let multiplier = dp = 3 ? 10 : Math.pow(10, dp -1), value: string
+    let multiplier = dp == 3 ? 10 : Math.pow(10, dp -1), value: string
     if (currenttick()) {
       if (buysell === 'buy')
         value = usereal ? ((currenttick()!.close-middle) * multiplier).toFixed(2) : (currenttick()!.close-middle).toFixed(dp)
@@ -186,41 +187,41 @@ export const useOrder = () => {
     }
   }
 
-  const updateStopLossAndReturnValue = (event: OverlayEvent, points:Partial<Point>|Partial<Point>[]|undefined) => {
-    let id = event.overlay.id
+  const updateStopLossAndReturnValue = (overlay: Overlay, chart: Chart, yAxis: Nullable<YAxis>) => {
+    let id = overlay.id
     let order: OrderInfo|null
     if (order = orderList().find(order => order.orderId === parseInt(id.replace('orderline_', ''))) ?? null) { // order found
-      order!.stopLoss = parseFloat( (points as Partial<Point>[])[0].value?.toFixed(instanceapi()?.getPriceVolumePrecision().price)!)
+      order!.stopLoss = parseFloat( overlay.points[0].value?.toFixed(getPrecision(chart, overlay, yAxis).price)!)
       const orderlist = orderList().map(orda => (orda.orderId === order?.orderId ? order : orda))
       setOrderList(orderlist)
       return order?.stopLoss
     }
   }
 
-  const updateEntryPointAndReturnValue = (event:OverlayEvent, points:Partial<Point>|Partial<Point>[]|undefined) => {
-    let id = event.overlay.id
+  const updateEntryPointAndReturnValue = (overlay: Overlay, chart: Chart, yAxis: Nullable<YAxis>) => {
+    let id = overlay.id
       let order: OrderInfo|null
       if (order = orderList().find(order => order.orderId === parseInt(id.replace('orderline_', ''))) ?? null) { // order found
-        order!.entryPoint = parseFloat( (points as Partial<Point>[])[0].value?.toFixed(instanceapi()?.getPriceVolumePrecision().price)!)
+        order!.entryPoint = parseFloat( overlay.points[0].value?.toFixed(getPrecision(chart, overlay, yAxis).price)!)
         const orderlist = orderList().map(orda => (orda.orderId === order?.orderId ? order : orda))
         setOrderList(orderlist)
         return order?.entryPoint
       }
   }
 
-  const updateTakeProfitAndReturnValue = (event:OverlayEvent, points:Partial<Point>|Partial<Point>[]|undefined) => {
-    let id = event.overlay.id
+  const updateTakeProfitAndReturnValue = (overlay: Overlay, chart: Chart, yAxis: Nullable<YAxis>) => {
+    let id = overlay.id
     let order: OrderInfo|null
     if (order = orderList().find(order => order.orderId === parseInt(id.replace('orderline_', ''))) ?? null) { // order found
-      order!.takeProfit = parseFloat( (points as Partial<Point>[])[0].value?.toFixed(instanceapi()?.getPriceVolumePrecision().price)!)
+      order!.takeProfit = parseFloat( overlay.points[0].value?.toFixed(getPrecision(chart, overlay, yAxis).price)!)
       const orderlist = orderList().map(orda => (orda.orderId === order?.orderId ? order : orda))
       setOrderList(orderlist)
       return order?.takeProfit
     }
   }
 
-  const updatePositionOrder = (event:OverlayEvent) => {
-    let id = event.overlay.id
+  const updatePositionOrder = (overlay: Overlay) => {
+    let id = overlay.id
     let order: OrderInfo|null
     if (order = orderList().find(order => order.orderId === parseInt(id.replace('orderline_', ''))) ?? null) { // order found
       useOrder().updateOrder({
@@ -241,7 +242,7 @@ export const useOrder = () => {
 export const drawOrder = (order: OrderInfo|null) => {
   if (!order)
     return
-  let overlay = instanceapi()?.getOverlayById(`orderline_${order!.orderId}`)
+  let overlay = instanceapi()?.getOverlays({ id: `orderline_${order!.orderId}`, 'paneId': 'candle_pane' }).at(0)
   if(overlay) {
     instanceapi()?.removeOverlay({    //remove the overlay first to prevent flooding this backend with api calls
       id: overlay.id,

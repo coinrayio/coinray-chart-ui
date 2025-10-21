@@ -527,7 +527,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         onTimezoneClick={() => { setTimezoneModalVisible((visible => !visible)) }}
         onSettingClick={() => { setSettingModalVisible((visible => !visible)) }}
         onScreenshotClick={() => {
-          if (widget) {
+          if (instanceapi()) {
             const url = instanceapi()!.getConvertPictureUrl(true, 'jpeg', props.theme === 'dark' ? '#151517' : '#ffffff')
             setScreenshotUrl(url)
           }
