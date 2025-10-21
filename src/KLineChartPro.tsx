@@ -16,7 +16,7 @@ import { render } from 'solid-js/web'
 
 import { utils, Nullable, DeepPartial, Styles, Chart, dispose } from 'klinecharts'
 
-import ChartProComponent, { widget } from './ChartProComponent'
+import ChartProComponent, { instanceapi } from './ChartProComponent'
 
 import { SymbolInfo, Period, ChartPro, ChartProOptions } from './types'
 import ChartDataLoader from './DataLoader'
@@ -52,6 +52,7 @@ export default class KLineChartPro implements ChartPro {
           theme={options.theme ?? 'light'}
           locale={options.locale ?? 'zh-CN'}
           drawingBarVisible={options.drawingBarVisible ?? true}
+          orderPanelVisible={options.orderPanelVisible ?? false}
           symbol={options.symbol}
           period={options.period}
           periods={
@@ -71,6 +72,9 @@ export default class KLineChartPro implements ChartPro {
           timezone={options.timezone ?? 'Etc/UTC'}
           mainIndicators={options.mainIndicators ?? ['MA']}
           subIndicators={options.subIndicators ?? ['VOL']}
+          dataTimestamp={options.dataTimestamp ?? new Date().getTime()}
+          orderController={options.orderController}
+          rootElementId={options.rootElementId ?? this._container?.id ?? ''}
           dataloader={dataLoader}/>
       ),
       this._container
@@ -138,10 +142,10 @@ export default class KLineChartPro implements ChartPro {
     return this._chartApi!.getPeriod()
   }
   getInstanceApi(): Nullable<Chart> {
-    return widget()
+    return instanceapi()
   }
   resize(): void {
-    widget()!.resize()
+    instanceapi()!.resize()
   }
   dispose(): void {
     this.destroy()

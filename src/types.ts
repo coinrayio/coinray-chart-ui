@@ -49,7 +49,7 @@ export interface OrderInfo {
   exitTime?: string
   exitType?: ExitType
   partials?: string
-  sessionId?: number
+  accountId?: number
 }
 
 export interface OrderModifyInfo {
@@ -144,7 +144,7 @@ export interface ChartDataLoaderType extends DataLoader {
 
 export interface OrderResource {
   retrieveOrder (order_id: number): Promise<OrderInfo|null>
-  retrieveOrders (action?: OrderType, session_id?: number|string): Promise<OrderInfo[]|null>
+  retrieveOrders (action?: OrderType, account_id?: number|string): Promise<OrderInfo[]|null>
   openOrder (action: OrderType, lot_size: number, entry_price: number, stop_loss?: number, take_profit?: number): Promise<OrderInfo|null>
   closeOrder (order_id: number, lotsize?: number): Promise<OrderInfo|null>
   modifyOrder (order: OrderModifyInfo): Promise<OrderInfo|null>
@@ -154,6 +154,7 @@ export interface OrderResource {
 
 export interface ChartProOptions {
   container: string | HTMLElement
+  rootElementId?: string
   styles?: DeepPartial<Styles>
   watermark?: string | Node
   theme?: string
@@ -167,9 +168,8 @@ export interface ChartProOptions {
   mainIndicators?: string[]
   subIndicators?: string[]
   datafeed: Datafeed
-  dataTimestamp: number
+  dataTimestamp?: number
   orderController: OrderResource
-  rootElementId: string
 }
 
 export interface ChartPro {
