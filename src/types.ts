@@ -12,7 +12,14 @@
  * limitations under the License.
  */
 
-import { KLineData, Styles, DeepPartial, Nullable, Chart, DataLoader, Period as DefaultPeriod } from 'klinecharts'
+import { KLineData, Styles, DeepPartial, Nullable, Chart, DataLoader, Period as DefaultPeriod, IndicatorCreate, PaneOptions, OverlayCreate, FigureCreate } from 'klinecharts'
+
+export type OrderType = 'buy'|'sell'|'buystop'|'buylimit'|'sellstop'|'selllimit'
+export type OrderModalType = 'placeorder'|'modifyorder'|'closepartial'
+export type ExitType = 'stoploss'|'takeprofit'|'breakeven'|'manualclose'|'cancel'
+
+export type DatafeedSubscribeCallback = (data: KLineData, timestamp?: number) => void
+export type OrderPlacedCallback = (data: OrderInfo|null) => void     //this should be called when a user has successfully placed an order from consumer project side
 
 export interface SymbolInfo {
   ticker: string
@@ -23,15 +30,105 @@ export interface SymbolInfo {
   pricePrecision?: number
   volumePrecision?: number
   priceCurrency?: string
+  dollarPerPip?: number
   type?: string
   logo?: string
+}
+
+export interface OrderInfo {
+  orderId: number
+  action: OrderType
+  entryPoint: number
+  exitPoint?: number
+  stopLoss?: number
+  takeProfit?: number
+  lotSize: number
+  pips?: number
+  pl?: number
+  entryTime?: string
+  exitTime?: string
+  exitType?: ExitType
+  partials?: string
+  sessionId?: number
+}
+
+export interface OrderModifyInfo {
+  id: number
+  action?: OrderType
+  entrypoint?: number
+  exitpoint?: number
+  stoploss?: number
+  takeprofit?: number
+  lotsize?: number
+  pips?: number
+  pl?: number
+  exittime?: string
+  exittype?: ExitType
+  partials?: string
 }
 
 export interface Period extends DefaultPeriod {
   text: string
 }
 
-export type DatafeedSubscribeCallback = (data: KLineData) => void
+type IndicatorsType = {
+  value?: IndicatorCreate,
+  isStack?: boolean,
+  paneOptions?: PaneOptions
+}
+
+type OverlaysType = {
+  value?: OverlayCreate,
+  paneId: string
+}
+
+type FiguresType = {
+  value?: string|FigureCreate,
+  ctx: CanvasRenderingContext2D
+}
+
+type OrderStyleType = {
+  lineStyle?: {
+		style?: string,
+		size?: number,
+		color?: string,
+		dashedValue?: number[]
+	},
+	labelStyle?: {
+		style?: string,
+		size?: number,
+		family?: string,
+		weight?: string,
+		paddingLeft?: number,
+		paddingRight?: number,
+		paddingBottom?: number,
+		paddingTop?: number,
+		borderStyle?: string,
+		borderSize?: number,
+		color?: string,
+		borderColor?: string,
+		backgroundColor?: string
+	}
+}
+
+export type OrderStylesType = {
+  buyStyle?: OrderStyleType,
+  buyLimitStyle?: OrderStyleType,
+  buyStopStyle?: OrderStyleType,
+  sellStyle?: OrderStyleType,
+  sellLimitStyle?: OrderStyleType,
+  sellStopStyle?: OrderStyleType,
+  stopLossStyle?: OrderStyleType,
+  takeProfitStyle?: OrderStyleType
+}
+
+export interface ChartObjType {
+  styleObj?: DeepPartial<Styles>
+  overlays?: OverlaysType[]
+  figures?: FiguresType[]
+  indicators?: IndicatorsType[]
+  orderStyles?: OrderStylesType
+}
 
 export interface Datafeed {
   searchSymbols (search?: string): Promise<SymbolInfo[]>
@@ -45,6 +142,16 @@ export interface ChartDataLoaderType extends DataLoader {
   loading: boolean
 }
 
+export interface OrderResource {
+  retrieveOrder (order_id: number): Promise<OrderInfo|null>
+  retrieveOrders (action?: OrderType, session_id?: number|string): Promise<OrderInfo[]|null>
+  openOrder (action: OrderType, lot_size: number, entry_price: number, stop_loss?: number, take_profit?: number): Promise<OrderInfo|null>
+  closeOrder (order_id: number, lotsize?: number): Promise<OrderInfo|null>
+  modifyOrder (order: OrderModifyInfo): Promise<OrderInfo|null>
+  unsetSlOrTP (order_id: string|number, slortp: 'sl'|'tp'): Promise<OrderInfo|null>
+  launchOrderModal (type: OrderModalType, callback: OrderPlacedCallback, order?: OrderModifyInfo): void
+}
+
 export interface ChartProOptions {
   container: string | HTMLElement
   styles?: DeepPartial<Styles>
@@ -52,6 +159,7 @@ export interface ChartProOptions {
   theme?: string
   locale?: string
   drawingBarVisible?: boolean
+  orderPanelVisible?: boolean
   symbol: SymbolInfo
   period: Period
   periods?: Period[]
@@ -59,6 +167,9 @@ export interface ChartProOptions {
   mainIndicators?: string[]
   subIndicators?: string[]
   datafeed: Datafeed
+  dataTimestamp: number
+  orderController: OrderResource
+  rootElementId: string
 }
 
 export interface ChartPro {
