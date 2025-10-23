@@ -18,7 +18,7 @@ import { Modal, List, Input } from '../../component'
 
 import i18n from '../../i18n'
 
-import { SymbolInfo, ChartDataLoaderType } from '../../types'
+import { SymbolInfo, ChartDataLoaderType } from '../../types/types'
 
 export interface SymbolSearchModalProps {
   locale: string

@@ -1,5 +1,5 @@
 import { DataLoaderGetBarsParams, DataLoaderSubscribeBarParams, DataLoaderUnsubscribeBarParams } from "klinecharts";
-import { ChartDataLoaderType, Datafeed, Period, SymbolInfo } from "./types";
+import { ChartDataLoaderType, Datafeed, Period, SymbolInfo } from "./types/types";
 import { period, setLoadingVisible, symbol } from "./ChartProComponent";
 
 export default class ChartDataLoader implements ChartDataLoaderType {

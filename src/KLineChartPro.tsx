@@ -18,7 +18,7 @@ import { utils, Nullable, DeepPartial, Styles, Chart, dispose } from 'klinechart
 
 import ChartProComponent, { instanceapi } from './ChartProComponent'
 
-import { SymbolInfo, Period, ChartPro, ChartProOptions } from './types'
+import { SymbolInfo, Period, ChartPro, ChartProOptions } from './types/types'
 import ChartDataLoader from './DataLoader'
 
 const Logo = (

@@ -14,7 +14,7 @@
 
 import { KLineData } from 'klinecharts'
 
-import { Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback } from './types'
+import { Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback } from './types/types'
 
 
 export default class DefaultDatafeed implements Datafeed {

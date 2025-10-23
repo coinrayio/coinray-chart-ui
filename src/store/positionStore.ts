@@ -1,5 +1,5 @@
 import { Chart, Nullable, Overlay, OverlayEvent, OverlayTemplate, Point, YAxis } from 'klinecharts';
-import { ExitType, OrderInfo, OrderModifyInfo, OrderResource, OrderType } from '../types';
+import { ExitType, OrderInfo, OrderModifyInfo, OrderResource, OrderType } from '../types/types';
 import { createSignal } from 'solid-js';
 import { currenttick } from './tickStore';
 import { instanceapi, symbol } from '../ChartProComponent';

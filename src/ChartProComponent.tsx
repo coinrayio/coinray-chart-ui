@@ -32,7 +32,7 @@ import {
 
 import { translateTimezone } from './widget/timezone-modal/data'
 
-import { SymbolInfo, Period, ChartProOptions, ChartPro } from './types'
+import { SymbolInfo, Period, ChartProOptions, ChartPro } from './types/types'
 import ChartDataLoader from './DataLoader'
 
 export interface ChartProComponentProps extends Required<Omit<ChartProOptions, 'container' | 'datafeed'>> {

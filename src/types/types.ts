@@ -71,6 +71,10 @@ export interface Period extends DefaultPeriod {
   text: string
 }
 
+export interface ProChart extends Chart {
+  
+}
+
 type IndicatorsType = {
   value?: IndicatorCreate,
   isStack?: boolean,

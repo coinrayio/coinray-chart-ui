@@ -1,4 +1,4 @@
-import { OrderInfo, OrderModalType, OrderModifyInfo, OrderPlacedCallback, OrderResource, OrderType } from "./types";
+import { OrderInfo, OrderModalType, OrderModifyInfo, OrderPlacedCallback, OrderResource, OrderType } from "./types/types";
 
 type MethodType = 'POST'|'GET'|'DELETE'|'PUT'
 

@@ -1,5 +1,5 @@
 import { Nullable } from "klinecharts";
-import { OrderInfo, OrderModalType, OrderModifyInfo, OrderPlacedCallback, OrderResource, OrderType } from "./types";
+import { OrderInfo, OrderModalType, OrderModifyInfo, OrderPlacedCallback, OrderResource, OrderType } from "./types/types";
 
 export default class DummyOrderController implements OrderResource {
   constructor (storage_name = 'dummy_order_controller') {

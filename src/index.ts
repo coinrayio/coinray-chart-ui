@@ -25,7 +25,7 @@ import { load } from './i18n'
 
 import { OrderType, ExitType, OrderModalType, OrderInfo, OrderModifyInfo, OrderResource, Datafeed,
   SymbolInfo, Period, DatafeedSubscribeCallback, OrderPlacedCallback, ChartProOptions, ChartPro, ChartObjType
-} from './types'
+} from './types/types'
 
 import './index.less'
 
