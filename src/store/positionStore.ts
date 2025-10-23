@@ -1,4 +1,4 @@
-import { Chart, Nullable, Overlay, OverlayEvent, Point, YAxis } from 'klinecharts';
+import { Chart, Nullable, Overlay, OverlayEvent, OverlayTemplate, Point, YAxis } from 'klinecharts';
 import { ExitType, OrderInfo, OrderModifyInfo, OrderResource, OrderType } from '../types';
 import { createSignal } from 'solid-js';
 import { currenttick } from './tickStore';
@@ -11,6 +11,79 @@ export const [chartapi, setChartapi] = createSignal<Nullable<Chart>>(null);
 export const [ordercontr, setOrderContr] = createSignal<Nullable<OrderResource>>(null)
 export const [orderList, setOrderList] = createSignal<OrderInfo[]>([])
 export const [currentequity, setCurrentequity] = createSignal<number>(0)
+
+export interface PositionLineProperties {
+  price?: number
+  text?: string
+  bodyBackgroundColor?: string
+  bodyTextColor?: string
+  bodyBorderColor?: string
+  tooltip?: string
+  quantity?: string
+  quantityFont?: string
+  quantityColor?: string
+  quantityBackgroundColor?: string
+  quantityBorderColor?: string
+  modifyTooltip?: string
+  cancelButtonIconColor?: string
+  cancelButtonBackgroundColor?: string
+  cancelButtonBorderColor?: string
+  lineColor?: string
+  lineWidth?: number
+  lineStyle?: 'solid'|'dashed'|'dotted'
+  lineLength?: number
+}
+
+export interface PositionOverlayTemplate extends OverlayTemplate {
+  setPrice?: (price: number) => void
+  setText?: (text: string) => void
+  setBodyBackgroundColor?: (color: string) => void
+  setBodyTextColor?: (color: string) => void
+  setBodyBorderColor?: (color: string) => void
+  setTooltip?: (tooltip: string) => void
+  setQuantity?: (quantity: string) => void
+  setQuantityFont?: (font: string) => void
+  setQuantityColor?: (color: string) => void
+  setQuantityBackgroundColor?: (color: string) => void
+  setQuantityBorderColor?: (color: string) => void
+  setModifyTooltip?: (tooltip: string) => void
+  setCancelButtonIconColor?: (color: string) => void
+  setCancelButtonBackgroundColor?: (color: string) => void
+  setCancelButtonBorderColor?: (color: string) => void
+  setLineColor?: (color: string) => void
+  // onCancel?: (callback: (event: OverlayEvent) => void) => void
+  setLineWidth?: (width: number) => void
+  setLineStyle?: (style: 'solid'|'dashed'|'dotted') => void
+  // onModify?: (callback: (event: OverlayEvent) => void) => void
+  setLineLength?: (length: number) => void
+}
+
+// export interface OrderOverlayTemplate extends OverlayTemplate {
+//   setPrice?: (price: number) => void
+//   setText?: (text: string) => void
+//   setBodyBackgroundColor?: (color: string) => void
+//   setBodyTextColor?: (color: string) => void
+//   setBodyBorderColor?: (color: string) => void
+//   setTooltip?: (tooltip: string) => void
+//   setQuantity?: (quantity: string) => void
+//   setQuantityFont?: (font: string) => void
+//   setQuantityColor?: (color: string) => void
+//   setQuantityBackgroundColor?: (color: string) => void
+//   setQuantityBorderColor?: (color: string) => void
+//   setPendingTooltip?: (tooltip: string) => void
+//   setActivateButtonIconColor?: (color: string) => void
+//   setActivateButtonBackgroundColor?: (color: string) => void
+//   setActivateButtonBorderColor?: (color: string) => void
+//   setLineColor?: (color: string) => void
+//   onActivate?: (callback: (event: OverlayEvent) => void) => void
+//   setLineWidth?: (width: number) => void
+//   setLineStyle?: (style: 'solid'|'dashed'|'dotted') => void
+//   setLineLength?: (length: number) => void
+// }
+
+export const createOrderLine = () => {
+  return instanceapi()?.createOverlay('')
+}
 
 export const useOrder = () => {
   const onOrderPlaced = (order: OrderInfo|null) => {
