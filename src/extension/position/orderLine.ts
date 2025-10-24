@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-import { Coordinate, utils } from 'klinecharts'
-import { PositionLineProperties, PositionOverlayTemplate, useOrder } from '../../store/positionStore'
+import { Coordinate, LineStyle, LineType, TextStyle, utils } from 'klinecharts'
+import { OrderLineProperties, OrderOverlay, OrderOverlayCreate } from '../../types/overlayTypes'
 import { buyStyle } from '../../store/overlayStyle/positionStyleStore'
 import { getPrecision } from '../../helpers'
 // import { useOverlaySettings } from '../../../store/overlaySettingStore'
 
-const buyLine = (): PositionOverlayTemplate => {
-  let properties: PositionLineProperties = {
+const OrderLine = (): OrderOverlayCreate => {
+  let properties: OrderLineProperties = {
     price: undefined,
     text: undefined,
     bodyBackgroundColor: undefined,
@@ -39,10 +39,39 @@ const buyLine = (): PositionOverlayTemplate => {
     lineWidth: undefined,
     lineStyle: undefined,
     lineLength: undefined,
+    lineDashedValue: undefined
   }
 
+  const lineStyle = (): LineStyle => {
+    return {
+      style: properties.lineStyle ?? buyStyle().lineStyle.style,
+      size: properties.lineWidth ?? buyStyle().lineStyle.size,
+      color: properties.lineColor ?? buyStyle().lineStyle.color,
+      dashedValue: properties.lineDashedValue ?? buyStyle().lineStyle.dashedValue
+    }
+  }
+
+  const labelStyle = (): TextStyle => {
+    return {
+      style: 'fill',
+      size: 12,
+      weight: 'normal',
+      family: properties.quantityFont ?? buyStyle().labelStyle.family,
+      color: properties.quantityColor ?? buyStyle().labelStyle.color,
+      backgroundColor: properties.quantityBackgroundColor ?? buyStyle().labelStyle.backgroundColor,
+      borderColor: properties.quantityBorderColor ?? buyStyle().labelStyle.borderColor,
+      borderStyle: 'solid' as const,
+      borderSize: 1,
+      borderDashedValue: [1, 1],
+      borderRadius: 3,
+      paddingLeft: 5,
+      paddingRight: 5,
+      paddingTop: 5,
+      paddingBottom: 5
+  }}
+
   return {
-    name: 'positionLine',
+    name: 'orderLine',
     totalStep: 2,
     needDefaultPointFigure: true,
     needDefaultXAxisFigure: false,
@@ -70,7 +99,7 @@ const buyLine = (): PositionOverlayTemplate => {
               }
             ]
           },
-          styles: buyStyle().lineStyle,
+          styles: lineStyle(),
           ignoreEvent: true
         },
         {
@@ -83,7 +112,7 @@ const buyLine = (): PositionOverlayTemplate => {
             align: 'right',
             baseline: 'middle'
           },
-          styles: buyStyle().labelStyle
+          styles: labelStyle()
         }
       ]
     },
@@ -128,28 +157,100 @@ const buyLine = (): PositionOverlayTemplate => {
           align: textAlign, baseline:
           'middle'
         },
-        styles: buyStyle().labelStyle
+        styles: labelStyle()
       }
     },
     onRightClick: (event): boolean => {
       // useOverlaySettings().singlePopup(event, 'buy')
       return true
     },
-    onClick: (event): boolean => {
-      event.figure?.
-      return true
-    }
+    // onClick: (event): boolean => {
+    //   event.figure?.
+    //   return true
+    // }
     setPrice(price: number) {
       console.info('setPrice called with price: ', price)
       properties.price = price
-      return this
+      return this as OrderOverlay
     },
     setText(text: string) {
       console.info('setText called with text: ', text)
       properties.text = text
-      return this
+      return this as OrderOverlay
+    },
+    setBodyBackgroundColor(color: string) {
+      properties.bodyBackgroundColor = color
+      return this as OrderOverlay
+    },
+    setBodyBorderColor(color: string) {
+      properties.bodyBorderColor = color
+      return this as OrderOverlay
+    },
+    setBodyTextColor(color: string) {
+      properties.bodyTextColor = color
+      return this as OrderOverlay
+    },
+    setTooltip(tooltip: string) {
+      properties.tooltip = tooltip
+      return this as OrderOverlay
+    },
+    setQuantity(quantity: number|string) {
+      properties.quantity = quantity
+      return this as OrderOverlay
+    },
+    setQuantityFont(font: string) {
+      properties.quantityFont = font
+      return this as OrderOverlay
+    },
+    setQuantityColor(color: string) {
+      properties.quantityColor = color
+      return this as OrderOverlay
+    },
+    setQuantityBackgroundColor(color: string) {
+      properties.quantityBackgroundColor = color
+      return this as OrderOverlay
+    },
+    setQuantityBorderColor(color: string) {
+      properties.quantityBorderColor = color
+      return this as OrderOverlay
+    },
+    setModifyTooltip(tooltip: string) {
+      properties.modifyTooltip = tooltip
+      return this as OrderOverlay
+    },
+    setCancelButtonIconColor(color: string) {
+      properties.cancelButtonIconColor = color
+      return this as OrderOverlay
+    },
+    setCancelButtonBackgroundColor(color: string) {
+      properties.cancelButtonBackgroundColor = color
+      return this as OrderOverlay
+    },
+    setCancelButtonBorderColor(color: string) {
+      properties.cancelButtonBorderColor = color
+      return this as OrderOverlay
+    },
+    setLineColor(color: string) {
+      properties.lineColor = color
+      return this as OrderOverlay
+    },
+    setLineWidth(width: number) {
+      properties.lineWidth = width
+      return this as OrderOverlay
+    },
+    setLineStyle(style: LineType) {
+      properties.lineStyle = style
+      return this as OrderOverlay
+    },
+    setLineLength(length: number) {
+      properties.lineLength = length
+      return this as OrderOverlay
+    },
+    setLineDashedValue(dashedValue: number[]) {
+      properties.lineDashedValue = dashedValue
+      return this as OrderOverlay
     }
   }
 }
 
-export default buyLine
+export default OrderLine

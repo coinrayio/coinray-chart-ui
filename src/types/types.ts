@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 
-import { KLineData, Styles, DeepPartial, Nullable, Chart, DataLoader, Period as DefaultPeriod, IndicatorCreate, PaneOptions, OverlayCreate, FigureCreate } from 'klinecharts'
+import { KLineData, Styles, DeepPartial, Nullable, Chart, DataLoader, Period as DefaultPeriod, IndicatorCreate, PaneOptions, OverlayCreate, FigureCreate, PickRequired, OverlayFilter, Overlay } from 'klinecharts'
+import { OrderOverlay } from './overlayTypes'
 
 export type OrderType = 'buy'|'sell'|'buystop'|'buylimit'|'sellstop'|'selllimit'
 export type OrderModalType = 'placeorder'|'modifyorder'|'closepartial'
@@ -20,6 +21,13 @@ export type ExitType = 'stoploss'|'takeprofit'|'breakeven'|'manualclose'|'cancel
 
 export type DatafeedSubscribeCallback = (data: KLineData, timestamp?: number) => void
 export type OrderPlacedCallback = (data: OrderInfo|null) => void     //this should be called when a user has successfully placed an order from consumer project side
+
+export interface UndoOptions {
+  /**
+   * A boolean flag. Controls if undo should be disabled.
+   */
+  disableUndo?: boolean
+}
 
 export interface SymbolInfo {
   ticker: string
@@ -72,7 +80,14 @@ export interface Period extends DefaultPeriod {
 }
 
 export interface ProChart extends Chart {
-  
+  chart: Chart
+  charts: Array<Chart>
+
+  setActiveChart (id: string): void
+  chartById (id: string): Chart | undefined
+  getOverlay (filter?: PickRequired<OverlayFilter, 'name' | 'groupId'>): Overlay[]
+  createOrderLine (options?: UndoOptions): Nullable<OrderOverlay>
+  createOrderLines (nums: number, options?: UndoOptions): Array<Nullable<OrderOverlay>>
 }
 
 type IndicatorsType = {

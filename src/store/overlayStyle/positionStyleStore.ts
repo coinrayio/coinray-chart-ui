@@ -1,6 +1,7 @@
+import { LineStyle, StateTextStyle } from 'klinecharts';
 import { createSignal } from 'solid-js';
 
-export const [buyStyle, setBuyStyle] = createSignal({
+export const [buyStyle, setBuyStyle] = createSignal<{ lineStyle: LineStyle, labelStyle: StateTextStyle}>({
 	lineStyle: {
 		style: 'dashed',
 		size: 1,
@@ -18,9 +19,12 @@ export const [buyStyle, setBuyStyle] = createSignal({
 		paddingTop: 5,
 		borderStyle: 'solid',
 		borderSize: 1,
+		borderDashedValue: [1,1],
+		borderRadius: 3,
 		color: '#FFFFFF',
 		borderColor: '#00698b',
-		backgroundColor: '#00698b'
+		backgroundColor: '#00698b',
+		show: true,
 	}
 })
 

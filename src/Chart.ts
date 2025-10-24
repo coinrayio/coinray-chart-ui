@@ -1,12 +1,27 @@
-import { ActionCallback, ActionType, BarSpace, Bounding, ConvertFilter, Coordinate, Crosshair, DataLoader, DecimalFold, DeepPartial, DomPosition, Formatter, Indicator, IndicatorCreate, IndicatorFilter, init, KLineData, Nullable, Options, Overlay, OverlayCreate, OverlayFilter, PaneOptions, Period, PickPartial, PickRequired, Point, Styles, SymbolInfo, ThousandsSeparator, VisibleRange } from "klinecharts";
-import { ProChart } from "./types/types";
+import {
+  ActionCallback, ActionType, BarSpace, Bounding, ConvertFilter, Coordinate, Crosshair, DataLoader, DecimalFold,
+  DeepPartial, DomPosition, Formatter, Indicator, IndicatorCreate, IndicatorFilter, init, KLineData, Nullable,
+  Options, Overlay, OverlayCreate, OverlayFilter, PaneOptions, Period, PickPartial, PickRequired, Point, Styles,
+  SymbolInfo, ThousandsSeparator, VisibleRange, Chart as KLineChart
+} from "klinecharts";
+import { ProChart, UndoOptions } from "./types/types";
+import { OrderOverlay, OrderOverlayCreate } from "./types/overlayTypes";
+import { isArray } from "lodash";
 
 export default class Chart implements ProChart
 {
-  private _chart: ProChart;
-  private _charts: Map<string, ProChart> = new Map<string, ProChart>();
+  private _chart: KLineChart;
+  private _charts: Map<string, KLineChart> = new Map<string, KLineChart>();
 
   public id: string;
+
+  get chart (): KLineChart {
+    return this._chart;
+  }
+
+  get charts (): KLineChart[] {
+    return Array.from(this._charts.values());
+  }
 
   constructor (ds: string | HTMLElement, options?: Options | undefined) {
     const chart = init(ds, options);
@@ -20,27 +35,6 @@ export default class Chart implements ProChart
 
   static init (ds: string | HTMLElement, options?: Options | undefined): Chart {
     return new Chart(ds, options);
-  }
-
-  get chart (): ProChart {
-    return this._chart;
-  }
-
-  get charts (): ProChart[] {
-    return Array.from(this._charts.values());
-  }
-
-  setActiveChart (id: string) {
-    const chart = this._charts.get(id);
-    if (chart) {
-      this._chart = chart;
-    }
-
-    return this
-  }
-
-  chartById (id: string): ProChart | undefined {
-    return this._charts.get(id);
   }
 
   /**
@@ -271,7 +265,62 @@ export default class Chart implements ProChart
    * Custom methods
    */
 
+  setActiveChart (id: string) {
+    const chart = this._charts.get(id);
+    if (chart) {
+      this._chart = chart;
+    }
+
+    return this
+  }
+
+  chartById (id: string): KLineChart | undefined {
+    return this._charts.get(id);
+  }
+
   getOverlay (filter?: PickRequired<OverlayFilter, 'name' | 'groupId'>): Overlay[] {
     return this._chart.getOverlays(filter);
+  }
+
+  createOrderLine (options?: UndoOptions): Nullable<OrderOverlay> {
+    const dataList = this._chart.getDataList()
+    const overlays = this._chart.createOverlay({
+      name: 'orderLine',
+      paneId: 'candle_pane',
+      points: [{
+        timestamp: dataList[dataList.length - 40].timestamp,
+        value: dataList[dataList.length - 40].close
+      }]
+    });
+    if (!overlays) {
+      return null
+    }
+
+    return this._chart.getOverlays({ id: overlays as string, paneId: 'candle_pane' })[0] as Nullable<OrderOverlay>;
+  }
+
+  createOrderLines (nums: number, options?: UndoOptions): Array<Nullable<OrderOverlay>> {
+    const points: Array<Partial<Point>> = []
+    const dataList = this._chart.getDataList()
+    const step = Math.floor(dataList.length / (nums + 1))
+    for (let i = 1; i <= nums; i++) {
+      points.push({
+        timestamp: dataList[step * i].timestamp,
+        value: dataList[step * i].close
+      })
+    }
+
+    const values: OverlayCreate = {
+      name: 'orderLine',
+      paneId: 'candle_pane',
+      points: points
+    }
+    const overlays = this._chart.createOverlay(values);
+
+    if (!overlays || (isArray(overlays) && overlays.length === 0)) {
+      return [];
+    }
+
+    return (overlays as Array<string>).map(o => this._chart.getOverlays({ id: o!, paneId: 'canlde_pane' })[0]) as Array<Nullable<OrderOverlay>>;
   }
 }

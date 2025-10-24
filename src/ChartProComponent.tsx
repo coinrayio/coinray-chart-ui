@@ -15,7 +15,7 @@
 import { createSignal, createEffect, onMount, Show, onCleanup, startTransition, Component } from 'solid-js'
 
 import {
-  init, dispose, utils, Nullable, Chart, OverlayMode, Styles,
+  init, dispose, utils, Nullable, OverlayMode, Styles,
   PaneOptions, Indicator, FormatDateParams, TooltipFeatureStyle,
   IndicatorTooltipData
 } from 'klinecharts'
@@ -32,8 +32,9 @@ import {
 
 import { translateTimezone } from './widget/timezone-modal/data'
 
-import { SymbolInfo, Period, ChartProOptions, ChartPro } from './types/types'
+import { SymbolInfo, Period, ChartProOptions, ChartPro, ProChart } from './types/types'
 import ChartDataLoader from './DataLoader'
+import Chart from './Chart'
 
 export interface ChartProComponentProps extends Required<Omit<ChartProOptions, 'container' | 'datafeed'>> {
   ref: (chart: ChartPro) => void
@@ -45,7 +46,7 @@ interface PrevSymbolPeriod {
   period: Period
 }
 
-function createIndicator (widget: Chart, indicatorName: string, isStack?: boolean, paneOptions?: PaneOptions): Nullable<string> {
+function createIndicator (widget: ProChart, indicatorName: string, isStack?: boolean, paneOptions?: PaneOptions): Nullable<string> {
   if (indicatorName === 'VOL') {
     paneOptions = { axis: { gap: { bottom: 2 } }, ...paneOptions }
   }
@@ -74,7 +75,7 @@ function createIndicator (widget: Chart, indicatorName: string, isStack?: boolea
 export const [loadingVisible, setLoadingVisible] = createSignal(false)
 export const [symbol, setSymbol] = createSignal<Nullable<SymbolInfo>>(null)
 export const [period, setPeriod] = createSignal<Nullable<Period>>(null)
-export const [instanceapi, setInstanceapi] = createSignal<Nullable<Chart>>(null)
+export const [instanceapi, setInstanceapi] = createSignal<Nullable<ProChart>>(null)
 
 const ChartProComponent: Component<ChartProComponentProps> = props => {
   let widgetRef: HTMLDivElement | undefined = undefined
@@ -131,7 +132,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
 
   onMount(() => {
     window.addEventListener('resize', documentResize)
-    setInstanceapi(init(widgetRef!, {
+    setInstanceapi(Chart.init(widgetRef!, {
       formatter: {
         formatDate: (params: FormatDateParams) => {
           const p = period()!

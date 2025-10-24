@@ -14,11 +14,11 @@
 
 import { render } from 'solid-js/web'
 
-import { utils, Nullable, DeepPartial, Styles, Chart, dispose } from 'klinecharts'
+import { utils, Nullable, DeepPartial, Styles, dispose } from 'klinecharts'
 
 import ChartProComponent, { instanceapi } from './ChartProComponent'
 
-import { SymbolInfo, Period, ChartPro, ChartProOptions } from './types/types'
+import { SymbolInfo, Period, ChartPro, ChartProOptions, ProChart } from './types/types'
 import ChartDataLoader from './DataLoader'
 
 const Logo = (
@@ -141,7 +141,7 @@ export default class KLineChartPro implements ChartPro {
   getPeriod (): Period {
     return this._chartApi!.getPeriod()
   }
-  getInstanceApi(): Nullable<Chart> {
+  getInstanceApi(): Nullable<ProChart> {
     return instanceapi()
   }
   resize(): void {
