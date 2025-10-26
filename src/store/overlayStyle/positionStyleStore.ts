@@ -19,7 +19,7 @@ export const [buyStyle, setBuyStyle] = createSignal<{ lineStyle: LineStyle, labe
 		paddingTop: 5,
 		borderStyle: 'solid',
 		borderSize: 1,
-		borderDashedValue: [1,1],
+		borderDashedValue: [0,0],
 		borderRadius: 3,
 		color: '#FFFFFF',
 		borderColor: '#00698b',

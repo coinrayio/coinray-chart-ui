@@ -20,26 +20,9 @@ import { getPrecision } from '../../helpers'
 
 const OrderLine = (): OrderOverlayCreate => {
   let properties: OrderLineProperties = {
-    price: undefined,
-    text: undefined,
-    bodyBackgroundColor: undefined,
-    bodyBorderColor: undefined,
-    bodyTextColor: undefined,
-    tooltip: undefined,
-    quantity: undefined,
-    quantityFont: undefined,
-    quantityColor: undefined,
-    quantityBackgroundColor: undefined,
-    quantityBorderColor: undefined,
-    modifyTooltip: undefined,
-    cancelButtonIconColor: undefined,
-    cancelButtonBackgroundColor: undefined,
-    cancelButtonBorderColor: undefined,
-    lineColor: undefined,
-    lineWidth: undefined,
-    lineStyle: undefined,
-    lineLength: undefined,
-    lineDashedValue: undefined
+    isBodyVisible: true,
+    isCancelButtonVisible: true,
+    isQuantityVisible: true,
   }
 
   const lineStyle = (): LineStyle => {
@@ -51,23 +34,23 @@ const OrderLine = (): OrderOverlayCreate => {
     }
   }
 
-  const labelStyle = (): TextStyle => {
+  const labelStyle = (type: 'body'|'quantity'|'cancel-button'): TextStyle => {
     return {
       style: 'fill',
-      size: 12,
-      weight: 'normal',
-      family: properties.quantityFont ?? buyStyle().labelStyle.family,
-      color: properties.quantityColor ?? buyStyle().labelStyle.color,
-      backgroundColor: properties.quantityBackgroundColor ?? buyStyle().labelStyle.backgroundColor,
-      borderColor: properties.quantityBorderColor ?? buyStyle().labelStyle.borderColor,
-      borderStyle: 'solid' as const,
-      borderSize: 1,
-      borderDashedValue: [1, 1],
-      borderRadius: 3,
-      paddingLeft: 5,
-      paddingRight: 5,
-      paddingTop: 5,
-      paddingBottom: 5
+      size: (type == 'body' ? properties.bodySize : type == 'quantity' ? properties.quantitySize : properties.cancelButtonSize) ?? properties.bodySize ?? buyStyle().labelStyle.size,
+      weight: (type == 'body' ? properties.bodyWeight : type == 'quantity' ? properties.quantityWeight : properties.cancelButtonWeight) ?? properties.bodyWeight ?? buyStyle().labelStyle.weight,
+      family: (type == 'body' ? properties.bodyFont : type == 'quantity' ? properties.quantityFont : properties.bodyFont) ?? properties.bodyFont ?? buyStyle().labelStyle.family,
+      color: (type == 'body' ? properties.bodyTextColor : type == 'quantity' ? properties.quantityColor : properties.cancelButtonIconColor) ?? properties.bodyTextColor ?? buyStyle().labelStyle.color,
+      backgroundColor: (type == 'body' ? properties.bodyBackgroundColor : type == 'quantity' ? properties.quantityBackgroundColor : properties.cancelButtonBackgroundColor) ?? properties.bodyBackgroundColor ?? buyStyle().labelStyle.backgroundColor,
+      borderColor: (type == 'body' ? properties.bodyBorderColor : type == 'quantity' ? properties.quantityBorderColor : properties.cancelButtonBorderColor) ?? properties.bodyBorderColor ?? buyStyle().labelStyle.borderColor,
+      borderStyle: properties.borderStyle ?? buyStyle().labelStyle.borderStyle,
+      borderSize: properties.borderSize ?? buyStyle().labelStyle.borderSize,
+      borderDashedValue: properties.borderDashedValue ?? buyStyle().labelStyle.borderDashedValue,
+      borderRadius: properties.borderRadius ?? buyStyle().labelStyle.borderRadius,
+      paddingLeft: (type == 'body' ? properties.bodyPaddingLeft : type == 'quantity' ? properties.quantityPaddingLeft : properties.cancelButtonPaddingLeft) ?? properties.bodyPaddingLeft ?? buyStyle().labelStyle.paddingLeft,
+      paddingRight: (type == 'body' ? properties.bodyPaddingRight : type == 'quantity' ? properties.quantityPaddingRight : properties.cancelButtonPaddingRight) ?? properties.bodyPaddingRight ?? buyStyle().labelStyle.paddingRight,
+      paddingTop: (type == 'body' ? properties.bodyPaddingTop : type == 'quantity' ? properties.quantityPaddingTop : properties.cancelButtonPaddingTop) ?? properties.bodyPaddingTop ?? buyStyle().labelStyle.paddingTop,
+      paddingBottom: (type == 'body' ? properties.bodyPaddingBottom : type == 'quantity' ? properties.quantityPaddingBottom : properties.cancelButtonPaddingBottom) ?? properties.bodyPaddingBottom ?? buyStyle().labelStyle.paddingBottom
   }}
 
   return {
@@ -102,8 +85,33 @@ const OrderLine = (): OrderOverlayCreate => {
           styles: lineStyle(),
           ignoreEvent: true
         },
+        // {
+        //   key: 'body',
+        //   type: 'rect',
+        //   attrs: {
+        //     x: bounding.width - 90,
+        //     y:(properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y! : coordinates[0].y) - 10,
+        //     width: 70,
+        //     height: 20
+        //   },
+        //   styles: {
+        //     style: 'stroke',
+        //     // color
+        //     color: '#ff000020',
+        //     // border style
+        //     borderStyle: 'dashed',
+        //     // border color
+        //     borderColor: '#002affff',
+        //     // frame size
+        //     borderSize: 1,
+        //     // border dotted line parameters
+        //     borderDashedValue: [0, 0],
+        //     // Border fillet value
+        //     borderRadius: 3
+        //   }
+        // },
         {
-          key: 'label',
+          key: 'body',
           type: 'text',
           attrs: {
             x: bounding.width,
@@ -112,7 +120,31 @@ const OrderLine = (): OrderOverlayCreate => {
             align: 'right',
             baseline: 'middle'
           },
-          styles: labelStyle()
+          styles: labelStyle('body')
+        },
+        {
+          key: 'quantity',
+          type: 'text',
+          attrs: {
+            x: bounding.width - chart.calcTextWidth(properties.text ?? 'Position Line') - 10,
+            y:properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y,
+            text: properties.text ?? 'Position Line',
+            align: 'right',
+            baseline: 'middle'
+          },
+          styles: labelStyle('quantity')
+        },
+        {
+          key: 'cancel-button',
+          type: 'text',
+          attrs: {
+            x: bounding.width,
+            y:properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y,
+            text: 'X',
+            align: 'right',
+            baseline: 'middle'
+          },
+          styles: labelStyle('cancel-button')
         }
       ]
     },
@@ -157,7 +189,7 @@ const OrderLine = (): OrderOverlayCreate => {
           align: textAlign, baseline:
           'middle'
         },
-        styles: labelStyle()
+        styles: labelStyle('body')
       }
     },
     onRightClick: (event): boolean => {
@@ -178,6 +210,48 @@ const OrderLine = (): OrderOverlayCreate => {
       properties.text = text
       return this as OrderOverlay
     },
+    setQuantity(quantity: number|string) {
+      properties.quantity = quantity
+      return this as OrderOverlay
+    },
+    setModifyTooltip(tooltip: string) {
+      properties.modifyTooltip = tooltip
+      return this as OrderOverlay
+    },
+    setTooltip(tooltip: string) {
+      properties.tooltip = tooltip
+      return this as OrderOverlay
+    },
+
+    setLineColor(color: string) {
+      properties.lineColor = color
+      return this as OrderOverlay
+    },
+    setLineWidth(width: number) {
+      properties.lineWidth = width
+      return this as OrderOverlay
+    },
+    setLineStyle(style: LineType) {
+      properties.lineStyle = style
+      return this as OrderOverlay
+    },
+    setLineLength(length: number) {
+      properties.lineDashedValue = [length, length]
+      return this as OrderOverlay
+    },
+    setLineDashedValue(dashedValue: number[]) {
+      properties.lineDashedValue = dashedValue
+      return this as OrderOverlay
+    },
+
+    setBodyFont(font: string) {
+      properties.bodyFont = font
+      return this as OrderOverlay
+    },
+    setBodyTextColor(color: string) {
+      properties.bodyTextColor = color
+      return this as OrderOverlay
+    },
     setBodyBackgroundColor(color: string) {
       properties.bodyBackgroundColor = color
       return this as OrderOverlay
@@ -186,18 +260,7 @@ const OrderLine = (): OrderOverlayCreate => {
       properties.bodyBorderColor = color
       return this as OrderOverlay
     },
-    setBodyTextColor(color: string) {
-      properties.bodyTextColor = color
-      return this as OrderOverlay
-    },
-    setTooltip(tooltip: string) {
-      properties.tooltip = tooltip
-      return this as OrderOverlay
-    },
-    setQuantity(quantity: number|string) {
-      properties.quantity = quantity
-      return this as OrderOverlay
-    },
+
     setQuantityFont(font: string) {
       properties.quantityFont = font
       return this as OrderOverlay
@@ -214,10 +277,7 @@ const OrderLine = (): OrderOverlayCreate => {
       properties.quantityBorderColor = color
       return this as OrderOverlay
     },
-    setModifyTooltip(tooltip: string) {
-      properties.modifyTooltip = tooltip
-      return this as OrderOverlay
-    },
+
     setCancelButtonIconColor(color: string) {
       properties.cancelButtonIconColor = color
       return this as OrderOverlay
@@ -230,24 +290,21 @@ const OrderLine = (): OrderOverlayCreate => {
       properties.cancelButtonBorderColor = color
       return this as OrderOverlay
     },
-    setLineColor(color: string) {
-      properties.lineColor = color
+
+    setBorderStyle(style: LineType) {
+      properties.borderStyle = style
       return this as OrderOverlay
     },
-    setLineWidth(width: number) {
-      properties.lineWidth = width
+    setBorderSize(size: number) {
+      properties.borderSize = size
       return this as OrderOverlay
     },
-    setLineStyle(style: LineType) {
-      properties.lineStyle = style
+    setBorderDashedValue(dashedValue: number[]) {
+      properties.borderDashedValue = dashedValue
       return this as OrderOverlay
     },
-    setLineLength(length: number) {
-      properties.lineLength = length
-      return this as OrderOverlay
-    },
-    setLineDashedValue(dashedValue: number[]) {
-      properties.lineDashedValue = dashedValue
+    setBorderRadius(radius: number) {
+      properties.borderRadius = radius
       return this as OrderOverlay
     }
   }
