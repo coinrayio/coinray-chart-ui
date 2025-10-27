@@ -296,6 +296,7 @@ export default class Chart implements ProChart
       return null
     }
 
+    ///@ts-expect-error
     return this._chart.getOverlays({ id: overlays as string, paneId: 'candle_pane' })[0] as Nullable<OrderOverlay>;
   }
 
@@ -321,6 +322,7 @@ export default class Chart implements ProChart
       return [];
     }
 
+    ///@ts-expect-error
     return (overlays as Array<string>).map(o => this._chart.getOverlays({ id: o!, paneId: 'canlde_pane' })[0]) as Array<Nullable<OrderOverlay>>;
   }
 }

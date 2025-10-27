@@ -1,4 +1,4 @@
-import { LineType, Overlay, OverlayEvent, OverlayTemplate, StateLineStyle } from "klinecharts"
+import { LineType, Overlay, OverlayEvent, OverlayTemplate, PickPartial, StateLineStyle } from "klinecharts"
 import { FontWeights } from "./types"
 
 export interface OverlayEventListenerParams {
@@ -79,7 +79,7 @@ export interface OrderLineProperties {
   onModify?: OverlayEventListenerParams
 }
 
-interface OrderOverlayAttributes {
+type OrderOverlayAttributes = {
   setPrice: (price: number) => OrderOverlay
   setText: (text: string) => OrderOverlay
   setQuantity: (quantity: string) => OrderOverlay
@@ -121,6 +121,6 @@ interface OrderOverlayAttributes {
   onModify: <T>(params: T, callback: (params: T, event?: OverlayEvent<unknown>) => void) => OrderOverlay
 }
 
-export interface OrderOverlay extends Overlay, OrderOverlayAttributes {}
+export type OrderOverlay = Pick<Overlay, 'id' | 'paneId' | 'name' | 'groupId' | 'mode' | 'points'> & OrderOverlayAttributes
 
 export interface OrderOverlayCreate extends OverlayTemplate, OrderOverlayAttributes {}
