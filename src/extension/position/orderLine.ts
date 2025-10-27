@@ -16,6 +16,7 @@ import { Coordinate, LineStyle, LineType, TextStyle, utils } from 'klinecharts'
 import { OrderLineProperties, OrderOverlay, OrderOverlayCreate } from '../../types/overlayTypes'
 import { buyStyle } from '../../store/overlayStyle/positionStyleStore'
 import { getPrecision } from '../../helpers'
+import { instanceapi } from '../../ChartProComponent'
 // import { useOverlaySettings } from '../../../store/overlaySettingStore'
 
 const OrderLine = (): OrderOverlayCreate => {
@@ -62,11 +63,16 @@ const OrderLine = (): OrderOverlayCreate => {
     createPointFigures: ({chart, yAxis, overlay, coordinates, bounding }) => {
       console.info('Position Line price is set to: ', properties.price)
       const precision = getPrecision(chart, overlay, yAxis)
-      // let text = useOrder().calcPL(overlay.points[0].value!, precision.price, true)
-      // useOrder().updatePipsAndPL(overlay, text)
       if (properties.price !== undefined) {
         console.info('calculated y coordinate is: ', (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y)
       }
+      const bodyStyle = labelStyle('body')
+      const quantityStyle = labelStyle('quantity')
+      const cancelStyle = labelStyle('cancel-button')
+      const cancelText = 'X'
+      const quantityMarginRight = utils.calcTextWidth(cancelText) + cancelStyle.paddingLeft + cancelStyle.paddingRight + cancelStyle.borderSize
+      const bodyMarginRight = utils.calcTextWidth((properties.quantity ?? 'Size').toString()) + quantityStyle.paddingLeft + quantityStyle.paddingRight + quantityStyle.borderSize + quantityMarginRight
+
       return [
         {
           type: 'line',
@@ -87,17 +93,20 @@ const OrderLine = (): OrderOverlayCreate => {
         },
         // {
         //   key: 'body',
-        //   type: 'rect',
+        //   type: 'text',
         //   attrs: {
         //     x: bounding.width - 90,
         //     y:(properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y! : coordinates[0].y) - 10,
-        //     width: 70,
-        //     height: 20
+        //     align: 'right',
+        //     baseline: 'middle',
+        //     text: 'Testing'
         //   },
         //   styles: {
         //     style: 'stroke',
         //     // color
-        //     color: '#ff000020',
+        //     color: '#000000ff',
+
+		    //     backgroundColor: '#00698b',
         //     // border style
         //     borderStyle: 'dashed',
         //     // border color
@@ -105,7 +114,7 @@ const OrderLine = (): OrderOverlayCreate => {
         //     // frame size
         //     borderSize: 1,
         //     // border dotted line parameters
-        //     borderDashedValue: [0, 0],
+        //     borderDashedValue: [2, 2],
         //     // Border fillet value
         //     borderRadius: 3
         //   }
@@ -114,37 +123,37 @@ const OrderLine = (): OrderOverlayCreate => {
           key: 'body',
           type: 'text',
           attrs: {
-            x: bounding.width,
+            x: 100 + bounding.right,
             y:properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y,
             text: properties.text ?? 'Position Line',
             align: 'right',
             baseline: 'middle'
           },
-          styles: labelStyle('body')
+          styles: bodyStyle
         },
         {
           key: 'quantity',
           type: 'text',
           attrs: {
-            x: bounding.width - chart.calcTextWidth(properties.text ?? 'Position Line') - 10,
+            x: 30 + bounding.left,
             y:properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y,
-            text: properties.text ?? 'Position Line',
+            text: (properties.quantity ?? 'Size').toString(),
             align: 'right',
             baseline: 'middle'
           },
-          styles: labelStyle('quantity')
+          styles: quantityStyle
         },
         {
           key: 'cancel-button',
           type: 'text',
           attrs: {
-            x: bounding.width,
+            x: bounding.width - 50,
             y:properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y,
-            text: 'X',
+            text: cancelText,
             align: 'right',
             baseline: 'middle'
           },
-          styles: labelStyle('cancel-button')
+          styles: cancelStyle
         }
       ]
     },
