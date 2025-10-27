@@ -15,6 +15,8 @@
 import { KLineData, Styles, DeepPartial, Nullable, Chart, DataLoader, Period as DefaultPeriod, IndicatorCreate, PaneOptions, OverlayCreate, FigureCreate, PickRequired, OverlayFilter, Overlay } from 'klinecharts'
 import { OrderOverlay } from './overlayTypes'
 
+
+export type FontWeights = 'thin' | 'extra-light' | 'light' | 'normal' | 'medium' | 'semi-bold' | 'bold' | 'extra-bold' | 'black'
 export type OrderType = 'buy'|'sell'|'buystop'|'buylimit'|'sellstop'|'selllimit'
 export type OrderModalType = 'placeorder'|'modifyorder'|'closepartial'
 export type ExitType = 'stoploss'|'takeprofit'|'breakeven'|'manualclose'|'cancel'

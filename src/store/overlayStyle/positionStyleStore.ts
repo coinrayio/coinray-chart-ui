@@ -9,7 +9,7 @@ export const [buyStyle, setBuyStyle] = createSignal<{ lineStyle: LineStyle, labe
 		dashedValue: [4, 4]
 	},
 	labelStyle: {
-		style: 'fill',
+		style: 'stroke_fill',
 		size: 12,
 		family:'Helvetica Neue',
 		weight: 'normal',

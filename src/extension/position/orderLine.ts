@@ -12,18 +12,26 @@
  * limitations under the License.
  */
 
-import { Coordinate, LineStyle, LineType, TextStyle, utils } from 'klinecharts'
-import { OrderLineProperties, OrderOverlay, OrderOverlayCreate } from '../../types/overlayTypes'
+import { Coordinate, LineStyle, LineType, OverlayEvent, Point, TextStyle, utils } from 'klinecharts'
+import { OrderLineProperties, OrderOverlay, OrderOverlayCreate, OverlayEventListenerParams } from '../../types/overlayTypes'
 import { buyStyle } from '../../store/overlayStyle/positionStyleStore'
-import { getPrecision } from '../../helpers'
-import { instanceapi } from '../../ChartProComponent'
+import { convertFontweightNameToNumber, getPrecision } from '../../helpers'
+import { FontWeights } from "../../types/types"
 // import { useOverlaySettings } from '../../../store/overlaySettingStore'
+
+const executeCallback = (listener?: OverlayEventListenerParams, event?: OverlayEvent<unknown>) => {
+  if (listener) {
+    const { params, callback } = listener
+    callback(params, event)
+  }
+}
 
 const OrderLine = (): OrderOverlayCreate => {
   let properties: OrderLineProperties = {
     isBodyVisible: true,
     isCancelButtonVisible: true,
     isQuantityVisible: true,
+    marginRight: 10
   }
 
   const lineStyle = (): LineStyle => {
@@ -37,10 +45,10 @@ const OrderLine = (): OrderOverlayCreate => {
 
   const labelStyle = (type: 'body'|'quantity'|'cancel-button'): TextStyle => {
     return {
-      style: 'fill',
+      style: buyStyle().labelStyle.style,
       size: (type == 'body' ? properties.bodySize : type == 'quantity' ? properties.quantitySize : properties.cancelButtonSize) ?? properties.bodySize ?? buyStyle().labelStyle.size,
       weight: (type == 'body' ? properties.bodyWeight : type == 'quantity' ? properties.quantityWeight : properties.cancelButtonWeight) ?? properties.bodyWeight ?? buyStyle().labelStyle.weight,
-      family: (type == 'body' ? properties.bodyFont : type == 'quantity' ? properties.quantityFont : properties.bodyFont) ?? properties.bodyFont ?? buyStyle().labelStyle.family,
+      family: (type == 'body' ? properties.bodyFont : type == 'quantity' ? properties.quantityFont : 'icomoon') ?? properties.bodyFont ?? buyStyle().labelStyle.family,
       color: (type == 'body' ? properties.bodyTextColor : type == 'quantity' ? properties.quantityColor : properties.cancelButtonIconColor) ?? properties.bodyTextColor ?? buyStyle().labelStyle.color,
       backgroundColor: (type == 'body' ? properties.bodyBackgroundColor : type == 'quantity' ? properties.quantityBackgroundColor : properties.cancelButtonBackgroundColor) ?? properties.bodyBackgroundColor ?? buyStyle().labelStyle.backgroundColor,
       borderColor: (type == 'body' ? properties.bodyBorderColor : type == 'quantity' ? properties.quantityBorderColor : properties.cancelButtonBorderColor) ?? properties.bodyBorderColor ?? buyStyle().labelStyle.borderColor,
@@ -57,10 +65,11 @@ const OrderLine = (): OrderOverlayCreate => {
   return {
     name: 'orderLine',
     totalStep: 2,
-    needDefaultPointFigure: true,
+    needDefaultPointFigure: false,
     needDefaultXAxisFigure: false,
     needDefaultYAxisFigure: true,
     createPointFigures: ({chart, yAxis, overlay, coordinates, bounding }) => {
+      console.info('bounding is: ', bounding)
       console.info('Position Line price is set to: ', properties.price)
       const precision = getPrecision(chart, overlay, yAxis)
       if (properties.price !== undefined) {
@@ -69,17 +78,42 @@ const OrderLine = (): OrderOverlayCreate => {
       const bodyStyle = labelStyle('body')
       const quantityStyle = labelStyle('quantity')
       const cancelStyle = labelStyle('cancel-button')
-      const cancelText = 'X'
-      const quantityMarginRight = utils.calcTextWidth(cancelText) + cancelStyle.paddingLeft + cancelStyle.paddingRight + cancelStyle.borderSize
-      const bodyMarginRight = utils.calcTextWidth((properties.quantity ?? 'Size').toString()) + quantityStyle.paddingLeft + quantityStyle.paddingRight + quantityStyle.borderSize + quantityMarginRight
+      const cancelText = '\ue900'
+      const quantityText = (properties.quantity ?? 'Size').toString()
+      const bodyText = properties.text ?? 'Position Line'
+      const cancelMarginRight = properties.marginRight
+      const quantityMarginRight = utils.calcTextWidth(cancelText) + cancelStyle.paddingLeft + cancelStyle.paddingRight + cancelMarginRight - (properties.borderSize ?? buyStyle().labelStyle.borderSize)
+      const bodyMarginRight = utils.calcTextWidth((quantityText).toString()) + quantityStyle.paddingLeft + quantityStyle.paddingRight + quantityMarginRight
+      const lineMarginRight = utils.calcTextWidth((bodyText).toString()) + bodyStyle.paddingLeft + bodyStyle.paddingRight + bodyMarginRight
+      console.info('bodyMarginRight: ', bodyMarginRight, ' quantityMarginRight: ', quantityMarginRight, ' cancelMarginRight: ', cancelMarginRight, lineMarginRight)
+      console.info('cancel text width is: ', utils.calcTextWidth(cancelText), 'X widht is: ', utils.calcTextWidth('X'))
 
       return [
         {
+          key: 'price-line',
           type: 'line',
           attrs: {
             coordinates: [
               {
                 x: 0,
+                y: properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y
+              },
+              {
+                x: bounding.width - lineMarginRight,
+                y: properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y
+              }
+            ]
+          },
+          styles: lineStyle(),
+          ignoreEvent: true
+        },
+        {
+          key: 'price-line-two',
+          type: 'line',
+          attrs: {
+            coordinates: [
+              {
+                x: bounding.width - cancelMarginRight,
                 y: properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y
               },
               {
@@ -91,41 +125,13 @@ const OrderLine = (): OrderOverlayCreate => {
           styles: lineStyle(),
           ignoreEvent: true
         },
-        // {
-        //   key: 'body',
-        //   type: 'text',
-        //   attrs: {
-        //     x: bounding.width - 90,
-        //     y:(properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y! : coordinates[0].y) - 10,
-        //     align: 'right',
-        //     baseline: 'middle',
-        //     text: 'Testing'
-        //   },
-        //   styles: {
-        //     style: 'stroke',
-        //     // color
-        //     color: '#000000ff',
-
-		    //     backgroundColor: '#00698b',
-        //     // border style
-        //     borderStyle: 'dashed',
-        //     // border color
-        //     borderColor: '#002affff',
-        //     // frame size
-        //     borderSize: 1,
-        //     // border dotted line parameters
-        //     borderDashedValue: [2, 2],
-        //     // Border fillet value
-        //     borderRadius: 3
-        //   }
-        // },
         {
           key: 'body',
           type: 'text',
           attrs: {
-            x: 100 + bounding.right,
+            x: bounding.width - bodyMarginRight,
             y:properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y,
-            text: properties.text ?? 'Position Line',
+            text:bodyText,
             align: 'right',
             baseline: 'middle'
           },
@@ -135,9 +141,9 @@ const OrderLine = (): OrderOverlayCreate => {
           key: 'quantity',
           type: 'text',
           attrs: {
-            x: 30 + bounding.left,
+            x: bounding.width - quantityMarginRight,
             y:properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y,
-            text: (properties.quantity ?? 'Size').toString(),
+            text: quantityText,
             align: 'right',
             baseline: 'middle'
           },
@@ -147,7 +153,7 @@ const OrderLine = (): OrderOverlayCreate => {
           key: 'cancel-button',
           type: 'text',
           attrs: {
-            x: bounding.width - 50,
+            x: bounding.width - cancelMarginRight,
             y:properties.price ? (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y : coordinates[0].y,
             text: cancelText,
             align: 'right',
@@ -201,14 +207,39 @@ const OrderLine = (): OrderOverlayCreate => {
         styles: labelStyle('body')
       }
     },
-    onRightClick: (event): boolean => {
-      // useOverlaySettings().singlePopup(event, 'buy')
-      return true
+    // onRightClick: (event): boolean => {
+    //   // useOverlaySettings().singlePopup(event, 'buy')
+    //   return false
+    // },
+    onPressedMoveStart: (event): boolean => {
+      executeCallback(properties.onMoveStart, event)
+
+      return false
     },
-    // onClick: (event): boolean => {
-    //   event.figure?.
-    //   return true
-    // }
+    onPressedMoving: (event): boolean => {
+      properties.price = (event.chart.convertFromPixel([{ y: event.y, x: event.x }], { paneId: 'candle_pane' }) as Partial<Point>).value
+      executeCallback(properties.onMove, event)
+
+      return false
+    },
+    onPressedMoveEnd: (event): boolean => {
+      executeCallback(properties.onMoveEnd, event)
+
+      return false
+    },
+    onClick: (event): boolean => {
+      switch(event.figure?.key) {
+        case 'cancel-button':
+          executeCallback(properties.onCancel, event)
+          break;
+        case 'quantity':
+          executeCallback(properties.onModify, event)
+          break;
+        default:
+      }
+      return false
+    },
+
     setPrice(price: number) {
       console.info('setPrice called with price: ', price)
       properties.price = price
@@ -257,6 +288,13 @@ const OrderLine = (): OrderOverlayCreate => {
       properties.bodyFont = font
       return this as OrderOverlay
     },
+    setBodyFontWeight(weight: FontWeights | number) {
+      if (utils.isString(weight)) {
+        weight = convertFontweightNameToNumber(weight as FontWeights)
+      }
+      properties.bodyWeight = weight
+      return this as OrderOverlay
+    },
     setBodyTextColor(color: string) {
       properties.bodyTextColor = color
       return this as OrderOverlay
@@ -274,6 +312,13 @@ const OrderLine = (): OrderOverlayCreate => {
       properties.quantityFont = font
       return this as OrderOverlay
     },
+    setQuantityFontWeight(weight: FontWeights | number) {
+      if (utils.isString(weight)) {
+        weight = convertFontweightNameToNumber(weight as FontWeights)
+      }
+      properties.quantityWeight = weight
+      return this as OrderOverlay
+    },
     setQuantityColor(color: string) {
       properties.quantityColor = color
       return this as OrderOverlay
@@ -287,6 +332,13 @@ const OrderLine = (): OrderOverlayCreate => {
       return this as OrderOverlay
     },
 
+    setCancelButtonFontWeight(weight: FontWeights | number) {
+      if (utils.isString(weight)) {
+        weight = convertFontweightNameToNumber(weight as FontWeights)
+      }
+      properties.cancelButtonWeight = weight
+      return this as OrderOverlay
+    },
     setCancelButtonIconColor(color: string) {
       properties.cancelButtonIconColor = color
       return this as OrderOverlay
@@ -315,7 +367,44 @@ const OrderLine = (): OrderOverlayCreate => {
     setBorderRadius(radius: number) {
       properties.borderRadius = radius
       return this as OrderOverlay
+    },
+
+    onMoveStart<T>(params: T, callback: (params: T) => void) {
+      properties.onMoveStart = {
+        params: params,
+        callback: callback as (params: unknown) => void,
+      }
+      return this as OrderOverlay
+    },
+    onMove<T>(params: T, callback: (params: T) => void) {
+      properties.onMove = {
+        params: params,
+        callback: callback as (params: unknown) => void,
+      }
+      return this as OrderOverlay
+    },
+    onMoveEnd<T>(params: T, callback: (params: T) => void) {
+      properties.onMoveEnd = {
+        params: params,
+        callback: callback as (params: unknown) => void,
+      }
+      return this as OrderOverlay
+    },
+    onCancel<T>(params: T, callback: (params: T) => void) {
+      properties.onCancel = {
+        params: params,
+        callback: callback as (params: unknown) => void,
+      }
+      return this as OrderOverlay
+    },
+    onModify<T>(params: T, callback: (params: T) => void) {
+      properties.onModify = {
+        params: params,
+        callback: callback as (params: unknown) => void,
+      }
+      return this as OrderOverlay
     }
+
   }
 }
 

@@ -1,4 +1,10 @@
-import { LineType, Overlay, OverlayTemplate, StateLineStyle } from "klinecharts"
+import { LineType, Overlay, OverlayEvent, OverlayTemplate, StateLineStyle } from "klinecharts"
+import { FontWeights } from "./types"
+
+export interface OverlayEventListenerParams {
+  params: unknown,
+  callback: (params: unknown, event?: OverlayEvent<unknown>) => void
+}
 
 export interface OverlayProperties {
   text?: string
@@ -19,6 +25,7 @@ export interface OrderLineProperties {
   quantity?: number|string
   modifyTooltip?: string
   tooltip?: string
+  marginRight: number
 
   lineColor?: string
   lineWidth?: number
@@ -64,6 +71,12 @@ export interface OrderLineProperties {
   borderSize?: number,
   borderDashedValue?: number[],
   borderRadius?: number
+
+  onMoveStart?: OverlayEventListenerParams
+  onMove?: OverlayEventListenerParams
+  onMoveEnd?: OverlayEventListenerParams
+  onCancel?: OverlayEventListenerParams
+  onModify?: OverlayEventListenerParams
 }
 
 interface OrderOverlayAttributes {
@@ -80,16 +93,19 @@ interface OrderOverlayAttributes {
   setLineDashedValue: (dashedValue: number[]) => OrderOverlay
 
   setBodyFont: (font: string) => OrderOverlay
+  setBodyFontWeight: (weight: FontWeights | number) => OrderOverlay
   setBodyTextColor: (color: string) => OrderOverlay
   setBodyBackgroundColor: (color: string) => OrderOverlay
   setBodyBorderColor: (color: string) => OrderOverlay
 
   setQuantityFont: (font: string) => OrderOverlay
+  setQuantityFontWeight: (weight: FontWeights | number) => OrderOverlay
   setQuantityColor: (color: string) => OrderOverlay
   setQuantityBackgroundColor: (color: string) => OrderOverlay
   setQuantityBorderColor: (color: string) => OrderOverlay
 
   setCancelButtonIconColor: (color: string) => OrderOverlay
+  setCancelButtonFontWeight: (weight: FontWeights | number) => OrderOverlay
   setCancelButtonBackgroundColor: (color: string) => OrderOverlay
   setCancelButtonBorderColor: (color: string) => OrderOverlay
 
@@ -98,11 +114,11 @@ interface OrderOverlayAttributes {
   setBorderDashedValue: (dashedValue: number[]) => OrderOverlay
   setBorderRadius: (radius: number) => OrderOverlay
 
-  onMoveStart?: <T>(params: T, callback: (params: T) => void) => void
-  onMove?: <T>(params: T, callback: (params: T) => void) => void
-  onMoveEnd?: <T>(params: T, callback: (params: T) => void) => void
-  onCancel?: <T>(params: T, callback: (params: T) => void) => void
-  onModify?: <T>(params: T, callback: (params: T) => void) => void
+  onMoveStart: <T>(params: T, callback: (params: T, event?: OverlayEvent<unknown>) => void) => OrderOverlay
+  onMove: <T>(params: T, callback: (params: T, event?: OverlayEvent<unknown>) => void) => OrderOverlay
+  onMoveEnd: <T>(params: T, callback: (params: T, event?: OverlayEvent<unknown>) => void) => OrderOverlay
+  onCancel: <T>(params: T, callback: (params: T, event?: OverlayEvent<unknown>) => void) => OrderOverlay
+  onModify: <T>(params: T, callback: (params: T, event?: OverlayEvent<unknown>) => void) => OrderOverlay
 }
 
 export interface OrderOverlay extends Overlay, OrderOverlayAttributes {}
