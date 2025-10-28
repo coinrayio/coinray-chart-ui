@@ -68,13 +68,7 @@ const OrderLine = (): OrderOverlayCreate => {
     needDefaultPointFigure: false,
     needDefaultXAxisFigure: false,
     needDefaultYAxisFigure: true,
-    createPointFigures: ({chart, yAxis, overlay, coordinates, bounding }) => {
-      console.info('bounding is: ', bounding)
-      console.info('Position Line price is set to: ', properties.price)
-      const precision = getPrecision(chart, overlay, yAxis)
-      if (properties.price !== undefined) {
-        console.info('calculated y coordinate is: ', (chart.convertToPixel({ timestamp: chart.getDataList().at(chart.getDataList().length -1)?.timestamp, value: properties.price }) as Partial<Coordinate> ).y)
-      }
+    createPointFigures: ({chart, coordinates, bounding }) => {
       const bodyStyle = labelStyle('body')
       const quantityStyle = labelStyle('quantity')
       const cancelStyle = labelStyle('cancel-button')
@@ -85,8 +79,6 @@ const OrderLine = (): OrderOverlayCreate => {
       const quantityMarginRight = utils.calcTextWidth(cancelText) + cancelStyle.paddingLeft + cancelStyle.paddingRight + cancelMarginRight - (properties.borderSize ?? buyStyle().labelStyle.borderSize)
       const bodyMarginRight = utils.calcTextWidth((quantityText).toString()) + quantityStyle.paddingLeft + quantityStyle.paddingRight + quantityMarginRight
       const lineMarginRight = utils.calcTextWidth((bodyText).toString()) + bodyStyle.paddingLeft + bodyStyle.paddingRight + bodyMarginRight
-      console.info('bodyMarginRight: ', bodyMarginRight, ' quantityMarginRight: ', quantityMarginRight, ' cancelMarginRight: ', cancelMarginRight, lineMarginRight)
-      console.info('cancel text width is: ', utils.calcTextWidth(cancelText), 'X widht is: ', utils.calcTextWidth('X'))
 
       return [
         {
@@ -165,7 +157,6 @@ const OrderLine = (): OrderOverlayCreate => {
     },
     createYAxisFigures: ({ chart, overlay, coordinates, bounding, yAxis }) => {
       const precision = getPrecision(chart, overlay, yAxis)
-      console.info('overlay extend dat is: ', overlay.extendData)
       const isFromZero = yAxis?.isFromZero() ?? false
       let textAlign: CanvasTextAlign
       let x: number
@@ -192,9 +183,6 @@ const OrderLine = (): OrderOverlayCreate => {
         text = utils.formatPrecision(overlay.points[0].value, precision.price)
       }
 
-      // let width = utils.calcTextWidth((text as string))
-      // const height = width/(text as string).length * 3
-      // width = width + height * 2
       return {
         type: 'text',
         attrs: {
@@ -207,10 +195,17 @@ const OrderLine = (): OrderOverlayCreate => {
         styles: labelStyle('body')
       }
     },
-    // onRightClick: (event): boolean => {
-    //   // useOverlaySettings().singlePopup(event, 'buy')
-    //   return false
-    // },
+    onSelected: (event) => {
+      if (event.preventDefault)
+        event.preventDefault()
+      event.overlay.mode = 'normal'
+      return false
+    },
+    onRightClick: (event): boolean => {
+      if (event.preventDefault)
+        event.preventDefault()
+      return false
+    },
     onPressedMoveStart: (event): boolean => {
       executeCallback(properties.onMoveStart, event)
 
@@ -241,12 +236,10 @@ const OrderLine = (): OrderOverlayCreate => {
     },
 
     setPrice(price: number) {
-      console.info('setPrice called with price: ', price)
       properties.price = price
       return this as OrderOverlay
     },
     setText(text: string) {
-      console.info('setText called with text: ', text)
       properties.text = text
       return this as OrderOverlay
     },

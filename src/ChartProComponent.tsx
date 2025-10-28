@@ -236,6 +236,14 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         console.info('onCandleTooltipFeatureClick', data)
       })
 
+      instanceapi()?.subscribeAction('onZoom', (data) => {
+        console.info('chart zoomed: ', data)
+      })
+
+      instanceapi()?.subscribeAction('onCrosshairChange', (data) => {
+        console.info('crosshair change: ', data)
+      })
+
       const s = symbol()
       if (s?.priceCurrency) {
         priceUnitDom.innerHTML = s?.priceCurrency.toLocaleUpperCase()
