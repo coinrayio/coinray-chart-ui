@@ -35,47 +35,13 @@ import { translateTimezone } from './widget/timezone-modal/data'
 import { SymbolInfo, Period, ChartProOptions, ChartPro, ProChart } from './types/types'
 import ChartDataLoader from './DataLoader'
 import Chart from './Chart'
-
-export interface ChartProComponentProps extends Required<Omit<ChartProOptions, 'container' | 'datafeed'>> {
-  ref: (chart: ChartPro) => void
-  dataloader: ChartDataLoader
-}
+import { ChartProComponentProps, instanceapi, loadingVisible, period, setInstanceapi, setPeriod, setSymbol, symbol } from './store/chartStore'
+const { createIndicator, modifyIndicator, popIndicator, pushOverlay, pushMainIndicator, pushSubIndicator, redrawOrders, redraOverlaysIndiAndFigs } = useChartState()
 
 interface PrevSymbolPeriod {
   symbol: SymbolInfo
   period: Period
 }
-
-function createIndicator (widget: ProChart, indicatorName: string, isStack?: boolean, paneOptions?: PaneOptions): Nullable<string> {
-  if (indicatorName === 'VOL') {
-    paneOptions = { axis: { gap: { bottom: 2 } }, ...paneOptions }
-  }
-  const indi =  widget.createIndicator({
-    name: indicatorName,
-    createTooltipDataSource: (param): IndicatorTooltipData => {
-      const indiStyles = param.chart.getStyles().indicator
-      const features = indiStyles.tooltip.features
-      const icons: TooltipFeatureStyle[] = []
-
-      icons.push(param.indicator.visible ? features[1] : features[0])
-      icons.push(features[2])
-      icons.push(features[3])
-
-      return {
-        name: `${indicatorName}_${indi}`,
-        calcParamsText: indicatorName,
-        features: icons,
-        legends: []
-      }
-    }}, isStack, paneOptions) ?? null
-
-  return indi
-}
-
-export const [loadingVisible, setLoadingVisible] = createSignal(false)
-export const [symbol, setSymbol] = createSignal<Nullable<SymbolInfo>>(null)
-export const [period, setPeriod] = createSignal<Nullable<Period>>(null)
-export const [instanceapi, setInstanceapi] = createSignal<Nullable<ProChart>>(null)
 
 const ChartProComponent: Component<ChartProComponentProps> = props => {
   let widgetRef: HTMLDivElement | undefined = undefined
