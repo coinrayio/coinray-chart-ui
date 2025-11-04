@@ -2,7 +2,8 @@ import {
   ActionCallback, ActionType, BarSpace, Bounding, ConvertFilter, Coordinate, Crosshair, DataLoader, DecimalFold,
   DeepPartial, DomPosition, Formatter, Indicator, IndicatorCreate, IndicatorFilter, init, KLineData, Nullable,
   Options, Overlay, OverlayCreate, OverlayFilter, PaneOptions, Period, PickPartial, PickRequired, Point, Styles,
-  SymbolInfo, ThousandsSeparator, VisibleRange, Chart as KLineChart
+  SymbolInfo, ThousandsSeparator, VisibleRange, Chart as KLineChart,
+  ZoomBehavior
 } from "klinecharts";
 import { ProChart, UndoOptions } from "./types/types";
 import { OrderOverlay, OrderOverlayCreate } from "./types/overlayTypes";
@@ -247,6 +248,14 @@ export default class Chart implements ProChart
   isZoomEnabled (): boolean
   {
     return this._chart.isZoomEnabled();
+  }
+  setZoomBehavior (behavior: ZoomBehavior): void
+  {
+    this._chart.setZoomBehavior(behavior);
+  }
+  zoomBehavior (): ZoomBehavior
+  {
+    return this._chart.zoomBehavior();
   }
   setScrollEnabled (enabled: boolean): void
   {

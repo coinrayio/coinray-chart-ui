@@ -36,7 +36,8 @@ import { SymbolInfo, Period, ChartProOptions, ChartPro, ProChart } from './types
 import ChartDataLoader from './DataLoader'
 import Chart from './Chart'
 import { ChartProComponentProps, instanceapi, loadingVisible, period, setInstanceapi, setPeriod, setSymbol, symbol } from './store/chartStore'
-const { createIndicator, modifyIndicator, popIndicator, pushOverlay, pushMainIndicator, pushSubIndicator, redrawOrders, redraOverlaysIndiAndFigs } = useChartState()
+import { useChartState } from './store/chartStateStore'
+const { createIndicator, modifyIndicator, popIndicator, pushOverlay, pushMainIndicator, pushSubIndicator, redraOverlaysIndiAndFigs } = useChartState()
 
 interface PrevSymbolPeriod {
   symbol: SymbolInfo
@@ -155,6 +156,8 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       priceUnitDom.className = 'klinecharts-pro-price-unit'
       priceUnitContainer?.appendChild(priceUnitDom)
 
+      instanceapi()?.setZoomBehavior({ main: 'last_bar', xAxis: 'last_bar'})
+
       instanceapi()?.subscribeAction('onCrosshairFeatureClick', (data) => {
         console.info('onCrosshairFeatureClick', data)
       })
@@ -226,8 +229,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
 
     if (w) {
       mainIndicators().forEach(indicator => {
-        if (w)
-          createIndicator(w, indicator, true, { id: 'candle_pane' })
+        createIndicator(w, indicator, true, { id: 'candle_pane' })
       })
       const subIndicatorMap = {}
       props.subIndicators!.forEach(indicator => {

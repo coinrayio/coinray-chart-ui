@@ -57,7 +57,7 @@ const useDataSource = (locale:string) => {
     { key: 'Helvetica Neue', text: i18n('Helvetica Neue', locale) }
   ]
 
-	return {solid_dashed, size, fill_stroke, font_family, font_size, font_weight, none_always_followCross, true_false}
+	return {solid_dashed, dashed_value, size, fill_stroke, font_family, font_size, font_weight, none_always_followCross, true_false}
 }
 
 export default useDataSource

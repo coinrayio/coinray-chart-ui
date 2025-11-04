@@ -2,7 +2,7 @@ import i18n from '../../../i18n'
 import useDataSource from './dataSource'
 
 const getCrosshairSettings = (locale:string) => {
-	const { solid_dashed, fill_stroke, size, font_size, font_weight } = useDataSource(locale)
+	const { solid_dashed, dashed_value, fill_stroke, size, font_size, font_weight } = useDataSource(locale)
 	return [
 		{
       key: 'crosshair.show',
@@ -24,6 +24,12 @@ const getCrosshairSettings = (locale:string) => {
       text: i18n('Horizontal Line Style', locale),
       component: 'select',
       dataSource: solid_dashed
+    },
+    {
+      key: 'crosshair.horizontal.line.dashed_value',
+      text: i18n('Horizontal Line Style', locale),
+      component: 'select',
+      dataSource: dashed_value
     },
     {
       key: 'crosshair.horizontal.line.size',
@@ -84,6 +90,12 @@ const getCrosshairSettings = (locale:string) => {
       text: i18n('Vertical Line Style', locale),
       component: 'select',
       dataSource: solid_dashed
+    },
+    {
+      key: 'crosshair.vertical.line.size',
+      text: i18n('Vertical Line size', locale),
+      component: 'select',
+      dataSource: size
     },
     {
       key: 'crosshair.vertical.line.size',

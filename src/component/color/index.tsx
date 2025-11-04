@@ -177,7 +177,7 @@ const Color: Component<ColorProps> = props => {
 											return (
 												<div class={`each_color ${d == selectedColor() ? 'selected' : ''}`} style={`background-color: ${d}`}
 													onClick={e => {
-														e.stopPropagation()
+														e.preventDefault()
 														setSelectedColor(d)
 														addOpacity()
 													}}>
@@ -192,8 +192,9 @@ const Color: Component<ColorProps> = props => {
 					<div class="split_line"></div>
 					<div class="range_div">
 						<input class="range" style={`background-color: ${finalColor()}; border: 1px solid ${selectedColor()}`}
-							type="range" min="1" max="100" value={opacity()} 
-							onInput={handleRangeChange}
+							type="range" min="1" max="100" value={opacity()}
+							// onClick={e => e.preventDefault()}
+							onInput={(e) => { e.preventDefault; handleRangeChange(e); }}
 							onFocus={() => {
 								setRangeFocused(true)
 							}}
