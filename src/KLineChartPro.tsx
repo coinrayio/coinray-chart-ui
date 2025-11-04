@@ -16,10 +16,11 @@ import { render } from 'solid-js/web'
 
 import { utils, Nullable, DeepPartial, Styles, dispose } from 'klinecharts'
 
-import ChartProComponent, { instanceapi } from './ChartProComponent'
+import ChartProComponent from './ChartProComponent'
 
 import { SymbolInfo, Period, ChartPro, ChartProOptions, ProChart } from './types/types'
 import ChartDataLoader from './DataLoader'
+import { instanceapi } from './store/chartStore'
 
 const Logo = (
   <svg class="logo" viewBox="0 0 80 92">
