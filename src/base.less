@@ -2,8 +2,10 @@
 
 @period-bar-height: 38px;
 @drawing-bar-width: 52px;
+@order-panel-height: 260px;
 @widget-width: calc(100% - @drawing-bar-width);
 @widget-height: calc(100% - @period-bar-height);
+@content-height: calc(@widget-height - @order-panel-height);
 
 @c-primary: #1677ff;
 
@@ -14,6 +16,9 @@
 @c-text-light: #051441;
 @c-text-second-light: #76808F;
 @c-border-light: #ebedf1;
+@c-pane-background-light: @c-background-light;
+@c-pane-background-gradient-start-light: @c-background-light;
+@c-pane-background-gradient-end-light: @c-background-light;
 
 @c-hover-background-dark: fade(#1677ff, 15%);
 // @c-hover-background-dark: fade(#a3a4d5, 10%);
@@ -22,3 +27,6 @@
 @c-text-dark: #f8f8f8;
 @c-text-second-dark: #929AA5;
 @c-border-dark: #292929;
+@c-pane-background-dark: @c-background-dark;
+@c-pane-background-gradient-start-dark: @c-background-dark;
+@c-pane-background-gradient-end-dark: @c-background-dark;

@@ -14,9 +14,13 @@
 
 import { Component, Show, createSignal, onMount, onCleanup } from 'solid-js'
 
-import { SymbolInfo, Period } from '../../types/types'
+import { SymbolInfo, Period } from '../../types'
 
 import i18n from '../../i18n'
+import { fullScreen, setFullScreen } from '../../store/chartStateStore'
+import { getScreenSize } from '../../helpers'
+import { isString } from 'lodash'
+import { rootlelID } from '../../store/chartStore'
 
 export interface PeriodBarProps {
   locale: string
@@ -36,10 +40,23 @@ export interface PeriodBarProps {
 const PeriodBar: Component<PeriodBarProps> = props => {
   let ref: Node
 
-  const [fullScreen, setFullScreen] = createSignal(false)
+  const [showPeriodList, setShowPeriodList] = createSignal(false);
+  const [overflow, setOverflow] = createSignal(true)
+
+ const [periodPopupTop, setPeriodPopupTop] = createSignal(0)
+ const [periodPopupLeft, setPeriodPopupLeft] = createSignal(0)
+
+  const offAllPeriodOverlay = () => {
+    setShowPeriodList(false)
+    // setShowSpeed(false)
+    setOverflow(true)
+  }
 
   const fullScreenChange = () => {
     setFullScreen(full => !full)
+  }
+
+  const onSymbolClickLog = () => {
   }
 
   onMount(() => {
@@ -58,8 +75,9 @@ const PeriodBar: Component<PeriodBarProps> = props => {
 
   return (
     <div
-      ref={el => { ref = el }}
-      class="klinecharts-pro-period-bar">
+      ref={el => { ref = el }} class="klinecharts-pro-period-bar"
+      style={`${overflow() ? "overflow-x: auto;" : ""}`}
+    >
       <div class='menu-container'>
         <svg
           class={props.spread ? '' : 'rotate'}
@@ -71,14 +89,61 @@ const PeriodBar: Component<PeriodBarProps> = props => {
       <Show when={props.symbol}>
         <div
           class="symbol"
-          onClick={props.onSymbolClick}>
+          onClick={onSymbolClickLog}>
           <Show when={props.symbol.logo}>
             <img alt="symbol" src={props.symbol.logo}/>
           </Show>
           <span>{props.symbol.shortName ?? props.symbol.name ?? props.symbol.ticker}</span>
         </div>
       </Show>
-      {
+      {/* <button class="item tools" onClick={() => {setOrderModalVisible(true); props.orderController.launchOrderModal('placeorder', useOrder().onOrderPlaced)}}>Place order</button> */}
+      <div class="item tools period_home">
+        <button class="item period"
+          onclick={(event) => {
+            if(!showPeriodList()) { offAllPeriodOverlay(); setPeriodPopupLeft(getScreenSize().x - event.pageX! > 200 ? event.pageX! : getScreenSize().x-200); }
+            setOverflow(false)
+            setShowPeriodList(!showPeriodList())
+          }}
+        >
+          {props.period.text}
+        </button>
+        {
+          showPeriodList() &&
+          <div class='klinecharts-pro-popup_background' onclick={() => {setShowPeriodList(false); setOverflow(true);}}>
+            <div class="period_list" style={{ left: `${periodPopupLeft()-50}px` }}>
+              {
+                props.periods.map(p => (
+                  <li 
+                    onClick={() => {
+                      props.onPeriodChange(p)
+                      setShowPeriodList(false)
+                      setOverflow(true)
+                    }}
+                  >
+                    {p.text}
+                  </li>
+                ))
+              }
+            </div>
+          </div>
+        }
+      </div>
+      {/* <button class="item tools" 
+        onClick={() => {
+          setPausedStatus(!pausedStatus());
+          (props.datafeed as any).setIsPaused = pausedStatus()
+        }}
+      >
+        {pausedStatus() ? 'Play' : 'Pause'}
+      </button> */}
+      {/* <div class="item tools period_home">
+        <button class="item period"
+          onclick={showSpeedPopup}
+        >
+          Speed {range()}
+        </button>
+      </div> */}
+      {/* {
         props.periods.map(p => (
           <span
             class={`item period ${p.text === props.period.text ? 'selected' : ''}`}
@@ -86,7 +151,7 @@ const PeriodBar: Component<PeriodBarProps> = props => {
             {p.text}
           </span>
         ))
-      }
+      } */}
       <div
         class='item tools'
         onClick={props.onIndicatorClick}>
@@ -125,12 +190,14 @@ const PeriodBar: Component<PeriodBarProps> = props => {
         class='item tools'
         onClick={() => {
           if (!fullScreen()) {
-            const el = ref?.parentElement
+            // const el = ref?.parentElement
+            const el = isString(rootlelID()) ? document.querySelector(`#${rootlelID()}`) : rootlelID()
             if (el) {
               // @ts-expect-error
               const enterFullScreen = el.requestFullscreen ?? el.webkitRequestFullscreen ?? el.mozRequestFullScreen ?? el.msRequestFullscreen
               enterFullScreen.call(el)
               // setFullScreen(true)
+            } else {
             }
           } else {
             // @ts-expect-error
@@ -158,6 +225,19 @@ const PeriodBar: Component<PeriodBarProps> = props => {
           )
         }
       </div>
+      {/* <button class="item tools" 
+        onClick={onExitClicked}
+      >
+        { chartsessionCtr()?.isNotGuest() ? 'Dashboard' : 'Exit Test' }
+      </button> */}
+      {/* <div class='order-container'>
+        <svg
+          class={props.order_spread ? '' : 'rotate'}
+          viewBox="0 0 1024 1024"
+          onClick={props.onOrderMenuClick}>
+          <path d="M192.037 287.953h640.124c17.673 0 32-14.327 32-32s-14.327-32-32-32H192.037c-17.673 0-32 14.327-32 32s14.327 32 32 32zM832.161 479.169H438.553c-17.673 0-32 14.327-32 32s14.327 32 32 32h393.608c17.673 0 32-14.327 32-32s-14.327-32-32-32zM832.161 735.802H192.037c-17.673 0-32 14.327-32 32s14.327 32 32 32h640.124c17.673 0 32-14.327 32-32s-14.327-32-32-32zM319.028 351.594l-160 160 160 160z"/>
+        </svg>
+      </div> */}
     </div>
   )
 }

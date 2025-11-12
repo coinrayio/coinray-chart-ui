@@ -1,6 +1,6 @@
 import { createSignal, startTransition } from "solid-js";
-import { indicatorModalVisible, instanceapi, orderPanelVisible, periodModalVisible, rootlelID, screenshotUrl, setIndicatorModalVisible, setOrderPanelVisible, setPeriodModalVisible, setScreenshotUrl, setSettingModalVisible, settingModalVisible } from "./chartStore";
-import { documentResize, fullScreen, orderModalVisible, theme } from "./chartStateStore";
+import { indicatorModalVisible, instanceapi, orderModalVisible, orderPanelVisible, periodModalVisible, rootlelID, screenshotUrl, setIndicatorModalVisible, setOrderPanelVisible, setPeriodModalVisible, setScreenshotUrl, setSettingModalVisible, settingModalVisible } from "./chartStore";
+import { documentResize, fullScreen, theme } from "./chartStateStore";
 import { Chart } from 'klinecharts';
 import { periodInputValue, setPeriodInputValue } from "../widget/timeframe-modal";
 import { setInputClass } from "../component/input";

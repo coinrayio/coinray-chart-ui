@@ -21,6 +21,7 @@ import ChartProComponent from './ChartProComponent'
 import { SymbolInfo, Period, ChartPro, ChartProOptions, ProChart } from './types/types'
 import ChartDataLoader from './DataLoader'
 import { instanceapi } from './store/chartStore'
+import chroma from 'chroma-js'
 
 const Logo = (
   <svg class="logo" viewBox="0 0 80 92">

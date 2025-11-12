@@ -23,11 +23,12 @@ import {
 import lodashSet from 'lodash/set'
 import lodashClone from 'lodash/cloneDeep'
 
-import { SelectDataSourceItem, Loading } from './component'
+import { SelectDataSourceItem, Loading, OverlayPopup } from './component'
 
 import {
   PeriodBar, DrawingBar, IndicatorModal, TimezoneModal, SettingModal,
-  ScreenshotModal, IndicatorSettingModal, SymbolSearchModal
+  ScreenshotModal, IndicatorSettingModal, SymbolSearchModal,
+  OverlaySettingModal
 } from './widget'
 
 import { translateTimezone } from './widget/timezone-modal/data'
@@ -35,8 +36,9 @@ import { translateTimezone } from './widget/timezone-modal/data'
 import { SymbolInfo, Period, ChartProOptions, ChartPro, ProChart } from './types/types'
 import ChartDataLoader from './DataLoader'
 import Chart from './Chart'
-import { ChartProComponentProps, instanceapi, loadingVisible, period, setInstanceapi, setPeriod, setSymbol, symbol } from './store/chartStore'
+import { ChartProComponentProps, instanceapi, loadingVisible, orderPanelVisible, period, rootlelID, setInstanceapi, setPeriod, setRooltelId, setSymbol, symbol } from './store/chartStore'
 import { useChartState } from './store/chartStateStore'
+import { showOverlayPopup, showOverlaySetting } from './store/overlaySettingStore'
 const { createIndicator, modifyIndicator, popIndicator, pushOverlay, pushMainIndicator, pushSubIndicator, redraOverlaysIndiAndFigs } = useChartState()
 
 interface PrevSymbolPeriod {
@@ -137,6 +139,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     }))
 
     if (instanceapi()) {
+      setRooltelId(props.rootElementId)
       console.info('ChartPro widget initialized')
       const watermarkContainer = instanceapi()!.getDom('candle_pane', 'main')
       if (watermarkContainer) {
@@ -156,7 +159,8 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       priceUnitDom.className = 'klinecharts-pro-price-unit'
       priceUnitContainer?.appendChild(priceUnitDom)
 
-      instanceapi()?.setZoomBehavior({ main: 'last_bar', xAxis: 'last_bar'})
+      instanceapi()?.setZoomAnchor({ main: 'last_bar', xAxis: 'last_bar'})
+      instanceapi()?.setBarSpaceLimit({ max: 400 })
 
       instanceapi()?.subscribeAction('onCrosshairFeatureClick', (data) => {
         console.info('onCrosshairFeatureClick', data)
@@ -394,11 +398,20 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       instanceapi()?.setStyles(styles())
       setWidgetDefaultStyles(lodashClone(instanceapi()!.getStyles()))
     }
+    redraOverlaysIndiAndFigs()
   })
 
   return (
     <>
       <i class="icon-close klinecharts-pro-load-icon"/>
+      <Show when={showOverlayPopup()}>
+        <OverlayPopup/>
+      </Show>
+      <Show when={showOverlaySetting()}>
+        <OverlaySettingModal
+          locale={props.locale}
+        />
+      </Show>
       <Show when={symbolSearchModalVisible()}>
         <SymbolSearchModal
           locale={props.locale}
@@ -511,14 +524,15 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         }}
       />
       <div
-        class="klinecharts-pro-content">
+        class="klinecharts-pro-content"
+        data-orders-pane-visible={orderPanelVisible()}>
         <Show when={loadingVisible()}>
           <Loading/>
         </Show>
         <Show when={drawingBarVisible()}>
           <DrawingBar
             locale={props.locale}
-            onDrawingItemClick={overlay => { instanceapi()?.createOverlay(overlay) }}
+            onDrawingItemClick={overlay => { pushOverlay(overlay) }}
             onModeChange={mode => { instanceapi()?.overrideOverlay({ mode: mode as OverlayMode }) }}
             onLockChange={lock => { instanceapi()?.overrideOverlay({ lock }) }}
             onVisibleChange={visible => { instanceapi()?.overrideOverlay({ visible }) }}

@@ -12,6 +12,10 @@
   --klinecharts-pro-text-second-color: @c-text-second-light;
   --klinecharts-pro-border-color: @c-border-light;
   --klinecharts-pro-selected-color: fade(@c-primary, 15%);
+  --klinecharts-pro-popup-shadow-color: rgba(0, 0, 0, 0.2);
+  --klinecharts-pro-pane-background: @c-pane-background-light;
+  --klinecharts-pro-pane-background-gradient-start: @c-pane-background-gradient-start-light;
+  --klinecharts-pro-pane-background-gradient-end: @c-pane-background-gradient-end-light;
   &[data-theme="dark"] {
     --klinecharts-pro-hover-background-color: @c-hover-background-dark;
     --klinecharts-pro-background-color: @c-background-dark;
@@ -19,6 +23,10 @@
     --klinecharts-pro-text-color: @c-text-dark;
     --klinecharts-pro-text-second-color: @c-text-second-dark;
     --klinecharts-pro-border-color: @c-border-dark;
+    --klinecharts-pro-popup-shadow-color: rgba(255, 255, 255, 0.793);
+    --klinecharts-pro-pane-background: @c-pane-background-dark;
+    --klinecharts-pro-pane-background-gradient-start: @c-pane-background-gradient-start-dark;
+    --klinecharts-pro-pane-background-gradient-end: @c-pane-background-gradient-end-dark;
   }
   position: relative;
   display: flex;
@@ -69,12 +77,22 @@
     display: flex;
     flex-direction: row;
     width: 100%;
-    height: @widget-height;
+    height: @content-height;
+    // height: calc(@widget-height + @order-panel-height);
+    &[data-orders-pane-visible="false"] {
+      height: @widget-height;
+    }
   }
   &-widget {
     width: @widget-width;
     height: 100%;
     margin-left: 0;
+    &[data-pane-style='solid'] {
+      background-color: var(--klinecharts-pro-pane-background);
+    }
+    &[data-pane-style='gradient'] {
+      background-color:  var(--klinecharts-pro-pane-background);
+    }
     &[data-drawing-bar-visible="false"] {
       width: 100%;
     }

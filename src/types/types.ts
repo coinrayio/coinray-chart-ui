@@ -87,7 +87,7 @@ export interface ProChart extends Chart {
 
   setActiveChart (id: string): void
   chartById (id: string): Chart | undefined
-  getOverlay (filter?: PickRequired<OverlayFilter, 'name' | 'groupId'>): Overlay[]
+  getOverlayById(id: string): Nullable<Overlay>
   createOrderLine (options?: UndoOptions): Nullable<OrderOverlay>
   createOrderLines (nums: number, options?: UndoOptions): Array<Nullable<OrderOverlay>>
 }

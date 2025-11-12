@@ -65,6 +65,6 @@
     "solid-js": "^1.6.11"
   },
   "peerDependencies": {
-    "klinecharts": "^10.0.0-alpha9"
+    "klinecharts": "file:./klinecharts-10.0.0-alpha9.tgz"
   }
 }
