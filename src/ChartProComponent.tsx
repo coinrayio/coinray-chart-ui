@@ -214,7 +214,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       })
 
       instanceapi()?.subscribeAction('onCrosshairChange', (data) => {
-        console.info('crosshair change: ', data)
+        // console.info('crosshair change: ', data)
       })
 
       const s = symbol()
@@ -509,7 +509,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
           try {
             await startTransition(() => setDrawingBarVisible(!drawingBarVisible()))
             instanceapi()?.resize()
-          } catch (e) {}    
+          } catch (e) {}
         }}
         onSymbolClick={() => { setSymbolSearchModalVisible(!symbolSearchModalVisible()) }}
         onPeriodChange={setPeriod}
