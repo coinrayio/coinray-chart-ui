@@ -1,12 +1,11 @@
 import {
   ActionCallback, ActionType, BarSpace, Bounding, ConvertFilter, Coordinate, Crosshair, DataLoader, DecimalFold,
   DeepPartial, DomPosition, Formatter, Indicator, IndicatorCreate, IndicatorFilter, init, KLineData, Nullable,
-  Options, Overlay, OverlayCreate, OverlayFilter, PaneOptions, Period, PickPartial, PickRequired, Point, Styles,
-  SymbolInfo, ThousandsSeparator, VisibleRange, Chart as KLineChart,
-  ZoomBehavior
+  Options, Overlay, OverlayCreate, OverlayFilter, PaneOptions, Period, PickPartial, Point, Styles, SymbolInfo,
+  ThousandsSeparator, VisibleRange, Chart as KLineChart, BarSpaceLimit, ZoomAnchor
 } from "klinecharts";
 import { ProChart, UndoOptions } from "./types/types";
-import { OrderOverlay, OrderOverlayCreate } from "./types/overlayTypes";
+import { OrderOverlay } from "./types/overlayTypes";
 import { isArray } from "lodash";
 
 export default class Chart implements ProChart
@@ -217,6 +216,14 @@ export default class Chart implements ProChart
   {
     return this._chart.getBarSpace();
   }
+  setBarSpaceLimit (limit: Partial<BarSpaceLimit>): void
+  {
+    return this._chart.setBarSpaceLimit(limit)
+  }
+  getBarSpaceLimit (): BarSpaceLimit
+  {
+    return this._chart.getBarSpaceLimit()
+  }
   getVisibleRange (): VisibleRange
   {
     return this._chart.getVisibleRange();
@@ -249,13 +256,13 @@ export default class Chart implements ProChart
   {
     return this._chart.isZoomEnabled();
   }
-  setZoomBehavior (behavior: ZoomBehavior): void
+  setZoomAnchor (Anchor: ZoomAnchor): void
   {
-    this._chart.setZoomBehavior(behavior);
+    this._chart.setZoomAnchor(Anchor);
   }
-  zoomBehavior (): ZoomBehavior
+  zoomAnchor (): ZoomAnchor
   {
-    return this._chart.zoomBehavior();
+    return this._chart.zoomAnchor();
   }
   setScrollEnabled (enabled: boolean): void
   {
@@ -287,8 +294,8 @@ export default class Chart implements ProChart
     return this._charts.get(id);
   }
 
-  getOverlay (filter?: PickRequired<OverlayFilter, 'name' | 'groupId'>): Overlay[] {
-    return this._chart.getOverlays(filter);
+  getOverlayById (id: string): Nullable<Overlay> {
+    return this._chart.getOverlays({id})[0] ?? null;
   }
 
   createOrderLine (options?: UndoOptions): Nullable<OrderOverlay> {

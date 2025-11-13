@@ -16,7 +16,6 @@ export const [subIndicators, setSubIndicators] = createSignal({})
 export const [chartModified, setChartModified] = createSignal(false)
 export const [theme, setTheme] = createSignal('')
 export const [fullScreen, setFullScreen] = createSignal(false)
-export const [orderModalVisible, setOrderModalVisible] = createSignal(false)
 export const [range, setRange] = createSignal(1)
 export const [datafeed, setDatafeed] = createSignal<Datafeed>()
 
@@ -225,33 +224,42 @@ export const useChartState = () => {
       return false
 
     const ovrly = instanceapi()?.getOverlays({id: id})[0]
+
+    const handleRightClick = (event: OverlayEvent<unknown>) => {
+      if (event.preventDefault)
+        event.preventDefault()
+      console.info('on right click called', event.preventDefault)
+      if(ctrlKeyedDown()) {
+        console.info('control key down')
+        popOverlay(event.overlay.id)
+        return true
+      }
+      useOverlaySettings().openPopup(event, {overlayType: (event.overlay.name as overlayType)})
+      // popOverlay(event.overlay.id)
+      return true
+    }
     if (ovrly) {
       const style = !redrawing && useGetOverlayStyle[`${ovrly.name}Style`] ? useGetOverlayStyle[`${ovrly.name}Style`]() : undefined
       instanceapi()?.overrideOverlay({
         id: ovrly.id,
         styles: overlay.styles ?? style,
         onDrawEnd: (event) => {
+          console.info('on draw end called')
           if (!['measure'].includes(ovrly.name))
             return syncObject(event.overlay)
           return false
         },
         onPressedMoveEnd: (event) => {
+          console.info('on pressed move end called')
           if (!['measure'].includes(ovrly.name))
             return syncObject(event.overlay)
           return false
         },
-        onRightClick: ovrly.onRightClick ? ovrly.onRightClick : (event) => {
-          if(ctrlKeyedDown()) {
-            popOverlay(event.overlay.id)
-            return true
-          }
-          useOverlaySettings().openPopup(event, {overlayType: (event.overlay.name as overlayType)})
-          // popOverlay(event.overlay.id)
-          return true
-        }
+        onRightClick: ovrly.onRightClick ? ovrly.onRightClick : handleRightClick,
+        onDoubleClick: ovrly.onDoubleClick ? ovrly.onDoubleClick : handleRightClick
       })
       if (!redrawing)
-        syncObject(instanceapi()!.getOverlays({id})[0])
+        syncObject(ovrly)
     }
   }
 

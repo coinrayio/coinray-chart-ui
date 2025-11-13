@@ -20,9 +20,10 @@ import SettingModal from './setting-modal'
 import ScreenshotModal from './screenshot-modal'
 import IndicatorSettingModal from './indicator-setting-modal'
 import SymbolSearchModal from './symbol-search-modal'
+import OverlaySettingModal from './overlay'
 
 export {
-  PeriodBar, DrawingBar, IndicatorModal,
+  PeriodBar, DrawingBar, IndicatorModal, OverlaySettingModal,
   TimezoneModal, SettingModal, ScreenshotModal,
   IndicatorSettingModal, SymbolSearchModal
 }
