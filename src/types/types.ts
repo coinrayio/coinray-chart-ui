@@ -12,23 +12,8 @@
  * limitations under the License.
  */
 
-import type {
-  KLineData,
-  Styles,
-  DeepPartial,
-  Nullable,
-  Chart,
-  DataLoader,
-  IndicatorCreate,
-  PaneOptions,
-  OverlayCreate,
-  FigureCreate,
-  PickRequired,
-  OverlayFilter,
-  Overlay,
-  PeriodType
-} from 'klinecharts'
-import type { OrderOverlay } from './overlayTypes'
+import { KLineData, Styles, DeepPartial, Nullable, Chart, DataLoader, Period as DefaultPeriod, IndicatorCreate, PaneOptions, OverlayCreate, FigureCreate, PickRequired, OverlayFilter, Overlay } from 'klinecharts'
+import { OrderOverlay } from './overlayTypes'
 
 
 export type FontWeights = 'thin' | 'extra-light' | 'light' | 'normal' | 'medium' | 'semi-bold' | 'bold' | 'extra-bold' | 'black'
@@ -52,8 +37,8 @@ export interface SymbolInfo {
   shortName?: string
   exchange?: string
   market?: string
-  pricePrecision: number
-  volumePrecision: number
+  pricePrecision?: number
+  volumePrecision?: number
   priceCurrency?: string
   dollarPerPip?: number
   type?: string
@@ -92,10 +77,8 @@ export interface OrderModifyInfo {
   partials?: string
 }
 
-export interface Period {
-  type: PeriodType;
-  span: number;
-  text: string;
+export interface Period extends DefaultPeriod {
+  text: string
 }
 
 export interface ProChart extends Chart {
