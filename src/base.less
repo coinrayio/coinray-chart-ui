@@ -30,3 +30,32 @@
 @c-pane-background-dark: @c-background-dark;
 @c-pane-background-gradient-start-dark: @c-background-dark;
 @c-pane-background-gradient-end-dark: @c-background-dark;
+
+:root {
+  --klinecharts-pro-primary-color: @c-primary;
+  --klinecharts-pro-hover-background-color: @c-hover-background-light;
+  --klinecharts-pro-background-color: @c-background-light;
+  --klinecharts-pro-popover-background-color: @c-popover-background-light;
+  --klinecharts-pro-text-color: @c-text-light;
+  --klinecharts-pro-text-second-color: @c-text-second-light;
+  --klinecharts-pro-border-color: @c-border-light;
+  --klinecharts-pro-selected-color: fade(@c-primary, 15%);
+  --klinecharts-pro-popup-shadow-color: rgba(0, 0, 0, 0.2);
+  --klinecharts-pro-pane-background: @c-pane-background-light;
+  --klinecharts-pro-pane-background-gradient-start: @c-pane-background-gradient-start-light;
+  --klinecharts-pro-pane-background-gradient-end: @c-pane-background-gradient-end-light;
+}
+
+/* dark-mode defaults (applied when user adds .theme-dark on the root/html element) */
+:root.theme-dark {
+  --klinecharts-pro-hover-background-color: @c-hover-background-dark;
+  --klinecharts-pro-background-color: @c-background-dark;
+  --klinecharts-pro-popover-background-color: @c-popover-background-dark;
+  --klinecharts-pro-text-color: @c-text-dark;
+  --klinecharts-pro-text-second-color: @c-text-second-dark;
+  --klinecharts-pro-border-color: @c-border-dark;
+  --klinecharts-pro-popup-shadow-color: rgba(255, 255, 255, 0.793);
+  --klinecharts-pro-pane-background: @c-pane-background-dark;
+  --klinecharts-pro-pane-background-gradient-start: @c-pane-background-gradient-start-dark;
+  --klinecharts-pro-pane-background-gradient-end: @c-pane-background-gradient-end-dark;
+}
