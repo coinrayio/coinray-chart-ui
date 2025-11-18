@@ -20,7 +20,7 @@ import ChartProComponent from './ChartProComponent'
 
 import { SymbolInfo, Period, ChartPro, ChartProOptions, ProChart } from './types/types'
 import ChartDataLoader from './DataLoader'
-import { instanceapi } from './store/chartStore'
+import { instanceapi, PaneProperties, rootlelID } from './store/chartStore'
 import chroma from 'chroma-js'
 
 const Logo = (
@@ -49,7 +49,6 @@ export default class KLineChartPro implements ChartPro {
       () => (
         <ChartProComponent
           ref={(chart: ChartPro) => { this._chartApi = chart }}
-          styles={options.styles ?? {}}
           watermark={options.watermark ?? (Logo as Node)}
           theme={options.theme ?? 'light'}
           locale={options.locale ?? 'zh-CN'}
@@ -71,11 +70,11 @@ export default class KLineChartPro implements ChartPro {
               { span: 1, type: 'year', text: 'Y' }
             ]
           }
+          overrides={options.overrides ?? {}}
           timezone={options.timezone ?? 'Etc/UTC'}
           mainIndicators={options.mainIndicators ?? ['MA']}
           subIndicators={options.subIndicators ?? ['VOL']}
           dataTimestamp={options.dataTimestamp ?? new Date().getTime()}
-          orderController={options.orderController}
           rootElementId={options.rootElementId ?? this._container?.id ?? ''}
           dataloader={dataLoader}/>
       ),
@@ -104,11 +103,11 @@ export default class KLineChartPro implements ChartPro {
     return this._chartApi!.getTheme()
   }
 
-  setStyles(styles: DeepPartial<Styles>): void {
+  setStyles(styles: DeepPartial<PaneProperties>): void {
     this._chartApi!.setStyles(styles)
   }
 
-  getStyles(): Styles {
+  getStyles(): DeepPartial<PaneProperties> {
     return this._chartApi!.getStyles()
   }
 

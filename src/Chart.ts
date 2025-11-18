@@ -31,7 +31,7 @@ export default class Chart implements ProChart
     }
     this._chart = chart;
     this.id = chart.id;
-  }
+  } 
 
   static init (ds: string | HTMLElement, options?: Options | undefined): Chart {
     return new Chart(ds, options);

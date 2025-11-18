@@ -24,7 +24,7 @@ import i18n from '../../i18n'
 import { getOptions } from './data'
 import { ChartObjType } from '../../types'
 // import { chartsession, chartsessionCtr } from '../../ChartProComponent'
-import { setChartModified } from '../../store/chartStateStore'
+import { setChartModified } from '../../store/chartStore'
 
 export interface SettingModalProps {
   locale: string

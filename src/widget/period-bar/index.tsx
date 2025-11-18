@@ -17,7 +17,7 @@ import { Component, Show, createSignal, onMount, onCleanup } from 'solid-js'
 import { SymbolInfo, Period } from '../../types'
 
 import i18n from '../../i18n'
-import { fullScreen, setFullScreen } from '../../store/chartStateStore'
+import { fullScreen, setFullScreen } from '../../store/chartStore'
 import { getScreenSize } from '../../helpers'
 import { isString } from 'lodash'
 import { rootlelID } from '../../store/chartStore'

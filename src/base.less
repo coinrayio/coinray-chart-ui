@@ -28,7 +28,7 @@
 @c-text-second-dark: #929AA5;
 @c-border-dark: #292929;
 @c-pane-background-dark: @c-background-dark;
-@c-pane-background-gradient-start-dark: @c-background-dark;
+@c-pane-background-gradient-start-dark: #141442;
 @c-pane-background-gradient-end-dark: @c-background-dark;
 
 :root {
@@ -47,7 +47,7 @@
 }
 
 /* dark-mode defaults (applied when user adds .theme-dark on the root/html element) */
-:root.theme-dark {
+:root [data-theme="dark"] {
   --klinecharts-pro-hover-background-color: @c-hover-background-dark;
   --klinecharts-pro-background-color: @c-background-dark;
   --klinecharts-pro-popover-background-color: @c-popover-background-dark;

@@ -14,6 +14,7 @@
 
 import { KLineData, Styles, DeepPartial, Nullable, Chart, DataLoader, Period as DefaultPeriod, IndicatorCreate, PaneOptions, OverlayCreate, FigureCreate, PickRequired, OverlayFilter, Overlay } from 'klinecharts'
 import { OrderOverlay } from './overlayTypes'
+import { PaneProperties } from '../store/chartStore'
 
 
 export type FontWeights = 'thin' | 'extra-light' | 'light' | 'normal' | 'medium' | 'semi-bold' | 'bold' | 'extra-bold' | 'black'
@@ -144,7 +145,7 @@ export type OrderStylesType = {
 }
 
 export interface ChartObjType {
-  styleObj?: DeepPartial<Styles>
+  styleObj?: DeepPartial<PaneProperties>
   overlays?: OverlaysType[]
   figures?: FiguresType[]
   indicators?: IndicatorsType[]
@@ -176,7 +177,6 @@ export interface OrderResource {
 export interface ChartProOptions {
   container: string | HTMLElement
   rootElementId?: string
-  styles?: DeepPartial<Styles>
   watermark?: string | Node
   theme?: string
   locale?: string
@@ -190,14 +190,15 @@ export interface ChartProOptions {
   subIndicators?: string[]
   datafeed: Datafeed
   dataTimestamp?: number
-  orderController: OrderResource
+  orderController?: OrderResource
+  overrides?: DeepPartial<PaneProperties>
 }
 
 export interface ChartPro {
   setTheme(theme: string): void
   getTheme(): string
-  setStyles(styles: DeepPartial<Styles>): void
-  getStyles(): Styles
+  setStyles(styles: DeepPartial<PaneProperties>): void
+  getStyles(): DeepPartial<PaneProperties>
   setLocale(locale: string): void
   getLocale(): string
   setTimezone(timezone: string): void

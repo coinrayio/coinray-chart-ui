@@ -1,7 +1,7 @@
-import { Chart, DeepPartial, Indicator, IndicatorCreate, IndicatorTooltipData, Nullable, Overlay, OverlayCreate, OverlayEvent, OverlayStyle, PaneOptions, SmoothLineStyle, TooltipFeatureStyle, dispose } from 'klinecharts'
+import { Chart, DeepPartial, Indicator, IndicatorCreate, IndicatorTooltipData, Nullable, Overlay, OverlayCreate, OverlayEvent, OverlayStyle, PaneOptions, SmoothLineStyle, Styles, TooltipFeatureStyle, dispose } from 'klinecharts'
 import { ChartObjType, OrderInfo, OrderResource, OrderStylesType, ProChart, SymbolInfo } from "../types"
 import { createSignal } from "solid-js"
-import _, { cloneDeep, keys, set } from "lodash"
+import loadash from "lodash"
 import { Datafeed } from "../types"
 import { tickTimestamp } from "./tickStore"
 import { ctrlKeyedDown, timerid, widgetref } from "./keyEventStore"
@@ -9,15 +9,7 @@ import { OtherTypes, overlayType, useOverlaySettings } from "./overlaySettingSto
 import { buyLimitStyle, buyStopStyle, buyStyle, sellLimitStyle, sellStopStyle, sellStyle, setBuyLimitStyle, setBuyStopStyle, setBuyStyle, setSellLimitStyle, setSellStopStyle, setSellStyle, setStopLossStyle, setTakeProfitStyle, stopLossStyle, takeProfitStyle } from "./overlayStyle/positionStyleStore"
 import { straightLineStyle } from "./overlayStyle/inbuiltOverlayStyleStore"
 import { useGetOverlayStyle } from "./overlayStyle/useOverlayStyles"
-import { instanceapi } from './chartStore'
-
-export const [mainIndicators, setMainIndicators] = createSignal([''])
-export const [subIndicators, setSubIndicators] = createSignal({})
-export const [chartModified, setChartModified] = createSignal(false)
-export const [theme, setTheme] = createSignal('')
-export const [fullScreen, setFullScreen] = createSignal(false)
-export const [range, setRange] = createSignal(1)
-export const [datafeed, setDatafeed] = createSignal<Datafeed>()
+import { instanceapi, mainIndicators, PaneProperties, setChartModified, setMainIndicators, setStyles, setSubIndicators, subIndicators } from './chartStore'
 
 export const documentResize = () => {
   instanceapi()?.resize()
@@ -44,6 +36,13 @@ type IndicatorSettingsType = {
   paneId: string;
   calcParams: any[];
 }
+
+type CssRootVar =
+  '--klinecharts-pro-primary-color' | '--klinecharts-pro-primary-color' | '--klinecharts-pro-hover-background-color' |
+  '--klinecharts-pro-background-color' | '--klinecharts-pro-popover-background-color' | '--klinecharts-pro-text-color' |
+  '--klinecharts-pro-text-second-color' | '--klinecharts-pro-border-color' | '--klinecharts-pro-selected-color' |
+  '--klinecharts-pro-popup-shadow-color' | '--klinecharts-pro-pane-background' | '--klinecharts-pro-pane-background-gradient-start' |
+  '--klinecharts-pro-pane-background-gradient-end';
 
 const refineIndiObj = (indicator: Indicator): IndicatorCreate => {
   const keys = [
@@ -87,7 +86,7 @@ export const useChartState = () => {
     const chartStateObj = localStorage.getItem(`chartstatedata`)
     let chartObj: ChartObjType
     
-    const indi = refineIndiObj(_.cloneDeep(indicator))
+    const indi = refineIndiObj(loadash.cloneDeep(indicator))
     if (chartStateObj) {
       chartObj = JSON.parse(chartStateObj!)
       if (!chartObj.indicators) {
@@ -140,7 +139,7 @@ export const useChartState = () => {
     const chartStateObj = localStorage.getItem(`chartstatedata`)
     let chartObj: ChartObjType
     
-    const overly = refineOverlayObj(_.cloneDeep(overlay))
+    const overly = refineOverlayObj(loadash.cloneDeep(overlay))
     if (chartStateObj) {
       chartObj = JSON.parse(chartStateObj!)
       if (!chartObj.overlays) {
@@ -336,8 +335,35 @@ export const useChartState = () => {
     }
     return
   }
+  
+  const setCssRootVar = (name: CssRootVar, value: string) => {
+    document.documentElement.style.setProperty(name, value, 'important');
+    const root = document.querySelector('[data-theme]');
+    if (root)
+      (root as HTMLElement).style.setProperty(name, value, 'important');
+  }
 
-  const redraOverlaysIndiAndFigs = async () => {
+  const applyStyleOverrides = (overrides: DeepPartial<PaneProperties>) => {
+    // background
+    if (overrides.background) {
+      setCssRootVar('--klinecharts-pro-pane-background', overrides.background as string);
+    }
+  
+    // gradient
+    if (overrides.backgroundGradientStartColor) {
+      setCssRootVar('--klinecharts-pro-pane-background-gradient-start', overrides.backgroundGradientStartColor as string);
+    }
+    if (overrides.backgroundGradientEndColor) {
+      setCssRootVar('--klinecharts-pro-pane-background-gradient-end', overrides.backgroundGradientEndColor as string);
+    }
+  
+    // separator -> use border color var
+    if (overrides.separator?.color) {
+      setCssRootVar('--klinecharts-pro-border-color', overrides.separator.color as string);
+    }
+  }
+
+  const restoreChartState = async (overrides?: DeepPartial<PaneProperties>) => {
     const redraw = (chartStateObj: string) => {
       const chartObj = (JSON.parse(chartStateObj) as ChartObjType)
 
@@ -368,9 +394,6 @@ export const useChartState = () => {
           setSubIndicators(newSubIndicators)
         }, 500)
       }
-      if (chartObj.styleObj) {
-        instanceapi()?.setStyles(chartObj.styleObj)
-      }
       if (chartObj.orderStyles) {
         const styles = chartObj.orderStyles
         syncOrderStyles(styles)
@@ -391,15 +414,27 @@ export const useChartState = () => {
     const chartStateObj = localStorage.getItem(`chartstatedata`)!
     if (chartStateObj)
       redraw(chartStateObj)
-  }
 
-  return { createIndicator, modifyIndicator, popIndicator, syncIndiObject, syncObject, pushOverlay, popOverlay, pushMainIndicator, pushSubIndicator, redraOverlaysIndiAndFigs }
+    const chartObj = (JSON.parse(chartStateObj) as ChartObjType) ?? {}
+    if (overrides) {
+      applyStyleOverrides(overrides)
+
+      if (!chartObj.styleObj) {
+        chartObj.styleObj = overrides
+        localStorage.setItem(`chartstatedata`, JSON.stringify(chartObj))
+      }
+    }
+    if (chartObj.styleObj)
+      setStyles(chartObj.styleObj)
+  } 
+
+  return { createIndicator, modifyIndicator, popIndicator, syncIndiObject, syncObject, pushOverlay, popOverlay, pushMainIndicator, pushSubIndicator, restoreChartState }
 }
 
 const syncOrderStyles = (styles: OrderStylesType) => {
   if (styles.buyStyle) {
     setBuyStyle((prevbuystyle) => {
-      const buystyle = cloneDeep(prevbuystyle)
+      const buystyle = loadash.cloneDeep(prevbuystyle)
       if (styles.buyStyle?.lineStyle) {
         for (const key in styles.buyStyle.lineStyle) {
           if (key !== undefined) {
@@ -423,7 +458,7 @@ const syncOrderStyles = (styles: OrderStylesType) => {
   }
   if (styles.buyLimitStyle) {
     setBuyLimitStyle((prevBuyLimitStyle) => {
-      const buylimitstyle = cloneDeep(prevBuyLimitStyle)
+      const buylimitstyle = loadash.cloneDeep(prevBuyLimitStyle)
       if (styles.buyLimitStyle?.lineStyle) {
         for (const key in styles.buyLimitStyle.lineStyle) {
           if (key !== undefined) {
@@ -445,7 +480,7 @@ const syncOrderStyles = (styles: OrderStylesType) => {
   }
   if (styles.buyStopStyle) {
     setBuyStopStyle((prevbuystopstyle) => {
-      const buystopstyle = cloneDeep(prevbuystopstyle)
+      const buystopstyle = loadash.cloneDeep(prevbuystopstyle)
       if (styles.buyStopStyle?.lineStyle) {
         for (const key in styles.buyStopStyle.lineStyle) {
           if (key !== undefined) {
@@ -467,7 +502,7 @@ const syncOrderStyles = (styles: OrderStylesType) => {
   }
   if (styles.sellStyle) {
     setSellStyle((prevsellstyle) => {
-      const sellstyle = cloneDeep(prevsellstyle)
+      const sellstyle = loadash.cloneDeep(prevsellstyle)
       if (styles.sellStyle?.lineStyle) {
         for (const key in styles.sellStyle.lineStyle) {
           if (key !== undefined) {
@@ -489,7 +524,7 @@ const syncOrderStyles = (styles: OrderStylesType) => {
   }
   if (styles.sellLimitStyle) {
     setSellLimitStyle((prevselllimitstyle) => {
-      const selllimitstyle = cloneDeep(prevselllimitstyle)
+      const selllimitstyle = loadash.cloneDeep(prevselllimitstyle)
       if (styles.sellLimitStyle?.lineStyle) {
         for (const key in styles.sellLimitStyle.lineStyle) {
           if (key !== undefined) {
@@ -511,7 +546,7 @@ const syncOrderStyles = (styles: OrderStylesType) => {
   }
   if (styles.sellStopStyle) {
     setSellStopStyle((prevsellstopstyle) => {
-      const sellstopstyle = cloneDeep(prevsellstopstyle)
+      const sellstopstyle = loadash.cloneDeep(prevsellstopstyle)
       if (styles.sellStopStyle?.lineStyle) {
         for (const key in styles.sellStopStyle.lineStyle) {
           if (key !== undefined) {
@@ -533,7 +568,7 @@ const syncOrderStyles = (styles: OrderStylesType) => {
   }
   if (styles.stopLossStyle) {
     setStopLossStyle((prevstoplossstyle) => {
-      const stoplossstyle = cloneDeep(prevstoplossstyle)
+      const stoplossstyle = loadash.cloneDeep(prevstoplossstyle)
       if (styles.stopLossStyle?.lineStyle) {
         for (const key in styles.stopLossStyle.lineStyle) {
           if (key !== undefined) {
@@ -555,7 +590,7 @@ const syncOrderStyles = (styles: OrderStylesType) => {
   }
   if (styles.takeProfitStyle) {
     setTakeProfitStyle((prevtakeprofitstyle) => {    
-      const takeprofitstyle = cloneDeep(takeProfitStyle())
+      const takeprofitstyle = loadash.cloneDeep(takeProfitStyle())
       if (styles.takeProfitStyle?.lineStyle) {
         for (const key in styles.takeProfitStyle.lineStyle) {
           if (key !== undefined) {
