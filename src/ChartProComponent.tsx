@@ -12,12 +12,14 @@
  * limitations under the License.
  */
 
-import { createSignal, createEffect, onMount, Show, onCleanup, startTransition, Component } from 'solid-js'
+import {
+  createSignal, createEffect, onMount, Show,
+  onCleanup, startTransition, Component
+} from 'solid-js'
 
 import {
-  init, dispose, utils, Nullable, OverlayMode, Styles,
-  PaneOptions, Indicator, FormatDateParams, TooltipFeatureStyle,
-  IndicatorTooltipData
+  dispose, utils, OverlayMode, Styles, Indicator,
+  FormatDateParams, TooltipFeatureStyle
 } from 'klinecharts'
 
 import lodashSet from 'lodash/set'
@@ -33,13 +35,15 @@ import {
 
 import { translateTimezone } from './widget/timezone-modal/data'
 
-import { SymbolInfo, Period, ChartProOptions, ChartPro, ProChart } from './types/types'
-import ChartDataLoader from './DataLoader'
+import { SymbolInfo, Period } from './types/types'
 import Chart from './Chart'
-import { ChartProComponentProps, instanceapi, loadingVisible, orderPanelVisible, period, rootlelID, setInstanceapi, setPeriod, setRooltelId, setSymbol, symbol } from './store/chartStore'
+import {
+  ChartProComponentProps, instanceapi, loadingVisible, orderPanelVisible,
+  period, setInstanceapi, setPeriod, setRooltelId, setStyles, setSymbol, styles, symbol
+} from './store/chartStore'
 import { useChartState } from './store/chartStateStore'
 import { showOverlayPopup, showOverlaySetting } from './store/overlaySettingStore'
-const { createIndicator, modifyIndicator, popIndicator, pushOverlay, pushMainIndicator, pushSubIndicator, redraOverlaysIndiAndFigs } = useChartState()
+const { createIndicator, pushOverlay, restoreChartState } = useChartState()
 
 interface PrevSymbolPeriod {
   symbol: SymbolInfo
@@ -52,7 +56,6 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   let priceUnitDom: HTMLElement
 
   const [theme, setTheme] = createSignal(props.theme)
-  const [styles, setStyles] = createSignal(props.styles)
   const [locale, setLocale] = createSignal(props.locale)
 
   const [indicatorModalVisible, setIndicatorModalVisible] = createSignal(false)
@@ -81,7 +84,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     setTheme,
     getTheme: () => theme(),
     setStyles,
-    getStyles: () => instanceapi()!.getStyles(),
+    getStyles: () => styles() ?? {},
     setLocale,
     getLocale: () => locale(),
     setTimezone: (timezone: string) => { setTimezone({ key: timezone, text: translateTimezone(props.timezone, locale()) }) },
@@ -216,6 +219,8 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       instanceapi()?.subscribeAction('onCrosshairChange', (data) => {
         // console.info('crosshair change: ', data)
       })
+      console.info('calling restoreChartState')
+      restoreChartState(props.overrides)
 
       const s = symbol()
       if (s?.priceCurrency) {
@@ -395,10 +400,9 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
 
   createEffect(() => {
     if (styles()) {
-      instanceapi()?.setStyles(styles())
+      instanceapi()?.setStyles(styles()!)
       setWidgetDefaultStyles(lodashClone(instanceapi()!.getStyles()))
     }
-    redraOverlaysIndiAndFigs()
   })
 
   return (
@@ -541,6 +545,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         <div
           ref={widgetRef}
           class='klinecharts-pro-widget'
+          data-pane-style={props.overrides.backgroundType ?? 'solid'}
           data-drawing-bar-visible={drawingBarVisible()}/>
       </div>
     </>
