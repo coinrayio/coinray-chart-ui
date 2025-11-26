@@ -10,6 +10,7 @@
   "save": "Save",
   "confirm": "Confirm",
   "cancel": "Cancel",
+
   "ma": "MA(Moving Average)",
   "ema": "EMA(Exponential Moving Average)",
   "sma": "SMA",
@@ -36,6 +37,7 @@
   "roc": "ROC(Price Rate of Change)",
   "pvt": "PVT(Price and Volume Trend)",
   "ao": "AO(Awesome Oscillator)",
+
   "utc": "UTC",
   "honolulu": "(UTC-10) Honolulu",
   "juneau": "(UTC-8) Juneau",
@@ -54,6 +56,7 @@
   "tokyo": "(UTC+9) Tokyo",
   "sydney": "(UTC+10) Sydney",
   "norfolk": "(UTC+12) Norfolk",
+
   "horizontal_straight_line": "Horizontal Line",
   "horizontal_ray_line": "Horizontal Ray",
   "horizontal_segment": "Horizontal Segment",
@@ -84,8 +87,10 @@
   "any_waves": "Any Waves",
   "abcd": "ABCD Pattern",
   "xabcd": "XABCD Pattern",
+
   "weak_magnet": "Weak Magnet",
   "strong_magnet": "Strong Magnet",
+
   "symbol_search": "Symbol Search",
   "symbol_code": "Symbol Code",
   "params_1": "Parameter 1",
@@ -95,6 +100,7 @@
   "params_5": "Parameter 5",
   "period": "Period",
   "standard_deviation": "Standard Deviation",
+
   "candle_type": "Candle Type",
   "candle_solid": "Candle Solid",
   "candle_stroke": "Candle Stroke",
@@ -102,6 +108,8 @@
   "candle_down_stroke": "Candle Down Stroke",
   "ohlc": "OHLC",
   "area": "Area",
+  "heikin_ashi": "Heikin Ashi",
+
   "last_price_show": "Show Last Price",
   "high_price_show": "Show Highest Price",
   "low_price_show": "Show Lowest Price",
