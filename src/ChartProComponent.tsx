@@ -30,7 +30,8 @@ import { SelectDataSourceItem, Loading, OverlayPopup } from './component'
 import {
   PeriodBar, DrawingBar, IndicatorModal, TimezoneModal, SettingModal,
   ScreenshotModal, IndicatorSettingModal, SymbolSearchModal,
-  OverlaySettingModal
+  OverlaySettingModal,
+  SettingsFloating
 } from './widget'
 
 import { translateTimezone } from './widget/timezone-modal/data'
@@ -39,7 +40,7 @@ import { SymbolInfo, Period } from './types/types'
 import Chart from './Chart'
 import {
   ChartProComponentProps, instanceapi, loadingVisible, orderPanelVisible,
-  period, setInstanceapi, setPeriod, setRooltelId, setStyles, setSymbol, styles, symbol
+  period, selectedOverlay, setInstanceapi, setPeriod, setRooltelId, setStyles, setSymbol, styles, symbol
 } from './store/chartStore'
 import { useChartState } from './store/chartStateStore'
 import { showOverlayPopup, showOverlaySetting } from './store/overlaySettingStore'
@@ -541,6 +542,11 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
             onLockChange={lock => { instanceapi()?.overrideOverlay({ lock }) }}
             onVisibleChange={visible => { instanceapi()?.overrideOverlay({ visible }) }}
             onRemoveClick={(groupId) => { instanceapi()?.removeOverlay({ groupId }) }}/>
+        </Show>
+        <Show when={selectedOverlay()}>
+          <SettingsFloating
+            locale={locale()}
+          />
         </Show>
         <div
           ref={widgetRef}

@@ -21,9 +21,10 @@ import ScreenshotModal from './screenshot-modal'
 import IndicatorSettingModal from './indicator-setting-modal'
 import SymbolSearchModal from './symbol-search-modal'
 import OverlaySettingModal from './overlay'
+import FloatingAction from './setting-floating' 
 
 export {
   PeriodBar, DrawingBar, IndicatorModal, OverlaySettingModal,
   TimezoneModal, SettingModal, ScreenshotModal,
-  IndicatorSettingModal, SymbolSearchModal
+  IndicatorSettingModal, SymbolSearchModal, FloatingAction as SettingsFloating
 }

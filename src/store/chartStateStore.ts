@@ -9,7 +9,7 @@ import { OtherTypes, overlayType, useOverlaySettings } from "./overlaySettingSto
 import { buyLimitStyle, buyStopStyle, buyStyle, sellLimitStyle, sellStopStyle, sellStyle, setBuyLimitStyle, setBuyStopStyle, setBuyStyle, setSellLimitStyle, setSellStopStyle, setSellStyle, setStopLossStyle, setTakeProfitStyle, stopLossStyle, takeProfitStyle } from "./overlayStyle/positionStyleStore"
 import { straightLineStyle } from "./overlayStyle/inbuiltOverlayStyleStore"
 import { useGetOverlayStyle } from "./overlayStyle/useOverlayStyles"
-import { instanceapi, mainIndicators, PaneProperties, setChartModified, setMainIndicators, setStyles, setSubIndicators, subIndicators } from './chartStore'
+import { instanceapi, mainIndicators, PaneProperties, selectedOverlay, setChartModified, setMainIndicators, setSelectedOverlay, setStyles, setSubIndicators, subIndicators } from './chartStore'
 
 export const documentResize = () => {
   instanceapi()?.resize()
@@ -254,6 +254,8 @@ export const useChartState = () => {
             return syncObject(event.overlay)
           return false
         },
+        onSelected: (event) => setSelectedOverlay(event.overlay),
+        onDeselected: () => setSelectedOverlay(null),
         onRightClick: ovrly.onRightClick ? ovrly.onRightClick : handleRightClick,
         onDoubleClick: ovrly.onDoubleClick ? ovrly.onDoubleClick : handleRightClick
       })
@@ -272,6 +274,24 @@ export const useChartState = () => {
       setChartModified(true)
     }
     instanceapi()?.removeOverlay({id})
+  }
+
+  const modifyOverlay = (id: string, modifyInfo: Partial<OverlayCreate<unknown>>) => {
+    const chartStateObj = localStorage.getItem(`chartstatedata`)
+    if (chartStateObj) {
+      let chartObj: ChartObjType = JSON.parse(chartStateObj)
+
+      chartObj.overlays = chartObj.overlays?.map(overlay => {
+        if (overlay.value?.id === id) {
+          overlay.value = { ...overlay.value, ...modifyInfo }
+          overlay.paneId = modifyInfo.paneId ?? overlay.paneId
+        }
+        return overlay
+      })
+      localStorage.setItem(`chartstatedata`, JSON.stringify(chartObj))
+      setChartModified(true)
+      instanceapi()?.overrideOverlay({ ...modifyInfo, id })
+    }
   }
 
   const pushMainIndicator = (data: IndicatorChageType) => {
@@ -428,7 +448,7 @@ export const useChartState = () => {
       setStyles(chartObj.styleObj)
   } 
 
-  return { createIndicator, modifyIndicator, popIndicator, syncIndiObject, syncObject, pushOverlay, popOverlay, pushMainIndicator, pushSubIndicator, restoreChartState }
+  return { createIndicator, modifyIndicator, popIndicator, syncIndiObject, syncObject, pushOverlay, modifyOverlay, popOverlay, pushMainIndicator, pushSubIndicator, restoreChartState }
 }
 
 const syncOrderStyles = (styles: OrderStylesType) => {

@@ -57,26 +57,34 @@ const setStyle = (type: 'overlay') => {
 
 const sendBack = () => {
 	const overlay = popupOverlay()
-	instanceapi()?.overrideOverlay({id: overlay?.id, zLevel: +overlay!.zLevel+1})
-
-	setPopupOverlay(instanceapi()?.getOverlayById(popupOverlay()!.id)?? popupOverlay())
+	if (!overlay) {
+		return
+	}
+	useChartState()?.modifyOverlay(overlay.id, { zLevel: +overlay!.zLevel+1})
 }
 
 const sendFront = () => {
 	const overlay = popupOverlay()
-	instanceapi()?.overrideOverlay({id: overlay?.id, zLevel: +overlay!.zLevel-1})
-
-	setPopupOverlay(instanceapi()?.getOverlayById(popupOverlay()!.id)?? popupOverlay())
+	if (!overlay) {
+		return
+	}
+	useChartState()?.modifyOverlay(overlay.id, { zLevel: +overlay!.zLevel-1 })
 }
 
 const lockUnlock = () => {
-	instanceapi()?.overrideOverlay({id: popupOverlay()?.id, lock: !popupOverlay()?.lock})
-	setPopupOverlay(instanceapi()?.getOverlayById(popupOverlay()!.id)?? popupOverlay())
+	const overlay = popupOverlay()
+	if (!overlay) {
+		return
+	}
+	useChartState()?.modifyOverlay(overlay.id, { lock: !overlay.lock })
 }
 
 const hideUnhide = () => {
-	instanceapi()?.overrideOverlay({id: popupOverlay()?.id, visible: !popupOverlay()?.visible})
-	setPopupOverlay(instanceapi()?.getOverlayById(popupOverlay()!.id)?? popupOverlay())
+	const overlay = popupOverlay()
+	if (!overlay) {
+		return
+	}
+	useChartState()?.modifyOverlay(overlay.id, { visible: overlay.visible })
 }
 
  
