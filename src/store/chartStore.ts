@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js"
 import { ChartDataLoaderType, ChartPro, ChartProOptions, Datafeed, Period, ProChart, SymbolInfo } from "../types"
-import { DeepPartial, Nullable, Overlay, Styles } from "klinecharts"
+import { DeepPartial, LineStyle, Nullable, Overlay, PathStyle, PolygonStyle, RectStyle, Styles } from "klinecharts"
 import { Color } from "chroma-js"
 
 export interface PaneProperties extends Styles {

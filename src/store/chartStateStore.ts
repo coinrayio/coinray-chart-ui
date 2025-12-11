@@ -147,15 +147,6 @@ export const useChartState = () => {
           value: overlay,
           paneId: overlay.paneId
         }]
-        // chartObj = {
-        //   styleObj: chartObj.styleObj,
-        //   overlays: [{
-        //     value: overly,
-        //     paneId: overlay.paneId
-        //   }],
-        //   figures: chartObj.figures,
-        //   indicators: chartObj.indicators
-        // }
       } else {
         if (chartObj.overlays.find(ovaly => ovaly.value?.id === overly.id)) {
           chartObj.overlays = chartObj.overlays.map(ovaly => (ovaly.value?.id !== overly.id ? ovaly : {
