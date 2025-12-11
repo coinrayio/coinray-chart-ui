@@ -220,7 +220,6 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       instanceapi()?.subscribeAction('onCrosshairChange', (data) => {
         // console.info('crosshair change: ', data)
       })
-      console.info('calling restoreChartState')
       restoreChartState(props.overrides)
 
       const s = symbol()
@@ -400,9 +399,12 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   })
 
   createEffect(() => {
+    setWidgetDefaultStyles(lodashClone(instanceapi()!.getStyles()))
+  })
+
+  createEffect(() => {
     if (styles()) {
       instanceapi()?.setStyles(styles()!)
-      setWidgetDefaultStyles(lodashClone(instanceapi()!.getStyles()))
     }
   })
 
