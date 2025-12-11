@@ -1,5 +1,4 @@
 .cr-setting-floating {
-  // ensure toolbar is above chart and receives pointer events like a modal
   position: fixed;
   z-index: 9999;
   pointer-events: auto;
@@ -7,7 +6,7 @@
 
   .cr-floating-inner {
     display: flex;
-    flex-direction: row; /* force horizontal layout */
+    flex-direction: row;
     flex-wrap: nowrap;
     white-space: nowrap;
     gap: 6px;
@@ -17,6 +16,13 @@
     border-radius: 6px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     align-items: center;
+    .drag-handle {
+      width: 28px;
+      height: 34px;
+      cursor: move;
+      margin-left: 4px;
+      border-radius: 4px;
+    }
     .cr-action {
       position: relative;
       display: flex;
