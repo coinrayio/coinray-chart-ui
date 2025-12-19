@@ -25,6 +25,7 @@ export interface ColorProps {
 }
 
 const Color: Component<ColorProps> = props => {
+	// const op = chroma(String(props.value)).alpha() * 100
 	const op = String(props.value).includes('rgba') ? chroma(String(props.value)).alpha() * 100 : 100
 	const [open, setOpen] = createSignal(false)
 	const [opacity, setOpacity] = createSignal(op)
