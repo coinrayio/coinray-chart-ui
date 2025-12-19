@@ -1,4 +1,4 @@
-import { LineType, Overlay, OverlayEvent, OverlayTemplate, PickPartial, StateLineStyle } from "klinecharts"
+import { DeepPartial, LineType, Overlay, OverlayCreate, OverlayEvent, OverlayTemplate, PickPartial, PolygonType, StateLineStyle } from "klinecharts"
 import { FontWeights } from "./types"
 
 export interface OverlayEventListenerParams {
@@ -7,16 +7,27 @@ export interface OverlayEventListenerParams {
 }
 
 export interface OverlayProperties {
-  text?: string
-  color?: string
-  lineWidth?: number
-  lineStyle?: LineType
-  lineLength?: number
-  lineDashedValue?: number[]
-  tooltip?: string
-  backgroundColor?: string
-  borderColor?: string
-  borderWidth?: number
+  style: PolygonType
+  text: string
+  textColor: string
+  textFont: string
+  textFontSize: number
+  textFontWeight: number | string
+  textBackgroundColor: string
+  textPaddingLeft: number
+  textPaddingRight: number
+  textPaddingTop: number
+  textPaddingBottom: number
+  lineColor: string
+  lineWidth: number
+  lineStyle: LineType
+  lineLength: number
+  lineDashedValue: number[]
+  tooltip: string
+  backgroundColor: string
+  borderStyle: LineType
+  borderColor: string
+  borderWidth: number
 }
 
 export interface OrderLineProperties {
@@ -122,5 +133,16 @@ type OrderOverlayAttributes = {
 }
 
 export type OrderOverlay = Pick<Overlay, 'id' | 'paneId' | 'name' | 'groupId' | 'mode' | 'points'> & OrderOverlayAttributes
+export type ProOverlay = Overlay & {
+  setProperties: (properties: DeepPartial<OverlayProperties>, id: string) => void
+  getProperties: (id: string) => DeepPartial<OverlayProperties>
+}
+export type ProOverlayCreate = OverlayCreate & {
+  properties?: DeepPartial<OverlayProperties>
+}
 
 export interface OrderOverlayCreate extends OverlayTemplate, OrderOverlayAttributes {}
+export interface ProOverlayTemplate extends OverlayTemplate {
+  setProperties?: (properties: DeepPartial<OverlayProperties>, id: string) => void
+  getProperties?: (id: string) => DeepPartial<OverlayProperties>
+}

@@ -12,60 +12,112 @@
  * limitations under the License.
  */
 
-import { OverlayTemplate, PolygonAttrs, LineAttrs } from 'klinecharts'
+import { PolygonAttrs, LineAttrs, DeepPartial, LineStyle, TextStyle, PolygonStyle } from 'klinecharts'
+import { OverlayProperties, ProOverlayTemplate } from '../types'
+import loadash from "lodash"
 
-const xabcd: OverlayTemplate = {
-  name: 'xabcd',
-  totalStep: 6,
-  needDefaultPointFigure: true,
-  needDefaultXAxisFigure: true,
-  needDefaultYAxisFigure: true,
-  styles: {
-    polygon: {
-      color: 'rgba(22, 119, 255, 0.15)'
+const xabcd = (): ProOverlayTemplate => {
+  let properties: DeepPartial<OverlayProperties> = {}
+  
+  let polygonStyle = (): DeepPartial<PolygonStyle> => {
+    return {
+      style: properties.style ?? 'fill',
+      color: properties.backgroundColor ?? 'rgba(22, 119, 255, 0.15)',
+      borderColor: properties.lineColor ?? properties.borderColor,
+      borderSize: properties.borderWidth,
+      borderStyle: properties.borderStyle ?? properties.lineStyle
     }
-  },
-  createPointFigures: ({ coordinates, overlay }) => {
-    const dashedLines: LineAttrs[] = []
-    const polygons: PolygonAttrs[] = []
-    const tags = ['X', 'A', 'B', 'C', 'D']
-    const texts = coordinates.map((coordinate, i) => ({
-      ...coordinate,
-      baseline: 'bottom',
-      text: `(${tags[i]})`
-    }))
-    if (coordinates.length > 2) {
-      dashedLines.push({ coordinates: [coordinates[0], coordinates[2]] })
-      polygons.push({ coordinates: [coordinates[0], coordinates[1], coordinates[2]] })
-      if (coordinates.length > 3) {
-        dashedLines.push({ coordinates: [coordinates[1], coordinates[3]] })
-        if (coordinates.length > 4) {
-          dashedLines.push({ coordinates: [coordinates[2], coordinates[4]] })
-          polygons.push({ coordinates: [coordinates[2], coordinates[3], coordinates[4]] })
+  }
+  const lineStyle = (): DeepPartial<LineStyle> => {
+    return {
+      style: properties.lineStyle,
+      size: properties.lineWidth,
+      color: properties.lineColor ?? properties.borderColor,
+      dashedValue: properties.lineDashedValue
+    }
+  }
+  const dashedLineStyle = (): DeepPartial<LineStyle> => {
+    return {
+      ...lineStyle(),
+      style: 'dashed'
+    }
+  }
+  const textStyle = (): DeepPartial<TextStyle> => {
+    return {
+      color: properties.textColor,
+      family: properties.textFont,
+      size: properties.textFontSize,
+      weight: properties.textFontWeight,
+      backgroundColor: properties.textBackgroundColor,
+      paddingLeft: properties.textPaddingLeft,
+      paddingRight: properties.textPaddingRight,
+      paddingTop: properties.textPaddingTop,
+      paddingBottom: properties.textPaddingBottom
+    }
+  }
+
+  return {
+    name: 'xabcd',
+    totalStep: 6,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    styles: {
+      polygon: {
+        color: 'rgba(22, 119, 255, 0.15)'
+      }
+    },
+    createPointFigures: ({ coordinates, overlay }) => {
+      const dashedLines: LineAttrs[] = []
+      const polygons: PolygonAttrs[] = []
+      const tags = ['X', 'A', 'B', 'C', 'D']
+      const texts = coordinates.map((coordinate, i) => ({
+        ...coordinate,
+        baseline: 'bottom',
+        text: `(${tags[i]})`
+      }))
+      if (coordinates.length > 2) {
+        dashedLines.push({ coordinates: [coordinates[0], coordinates[2]] })
+        polygons.push({ coordinates: [coordinates[0], coordinates[1], coordinates[2]] })
+        if (coordinates.length > 3) {
+          dashedLines.push({ coordinates: [coordinates[1], coordinates[3]] })
+          if (coordinates.length > 4) {
+            dashedLines.push({ coordinates: [coordinates[2], coordinates[4]] })
+            polygons.push({ coordinates: [coordinates[2], coordinates[3], coordinates[4]] })
+          }
         }
       }
+      return [
+        {
+          type: 'line',
+          attrs: { coordinates },
+          styles: lineStyle()
+        },
+        {
+          type: 'line',
+          attrs: dashedLines,
+          styles: dashedLineStyle()
+        },
+        {
+          type: 'polygon',
+          ignoreEvent: true,
+          attrs: polygons,
+          styles: polygonStyle()
+        },
+        {
+          type: 'text',
+          ignoreEvent: true,
+          attrs: texts,
+          styles: textStyle()
+        }
+      ]
+    },
+    setProperties: (_properties: DeepPartial<OverlayProperties>) => {
+      properties = loadash.merge({}, properties, _properties) as OverlayProperties
+    },
+    getProperties: (): DeepPartial<OverlayProperties> => {
+      return properties
     }
-    return [
-      {
-        type: 'line',
-        attrs: { coordinates }
-      },
-      {
-        type: 'line',
-        attrs: dashedLines,
-        styles: { style: 'dashed' }
-      },
-      {
-        type: 'polygon',
-        ignoreEvent: true,
-        attrs: polygons
-      },
-      {
-        type: 'text',
-        ignoreEvent: true,
-        attrs: texts
-      }
-    ]
   }
 }
 

@@ -12,31 +12,67 @@
  * limitations under the License.
  */
 
-import { OverlayTemplate } from 'klinecharts'
+import { DeepPartial, LineStyle, TextStyle } from 'klinecharts'
+import loadash from "lodash"
+import { OverlayProperties, ProOverlayTemplate } from '../types'
 
-const eightWaves: OverlayTemplate = {
-  name: 'eightWaves',
-  totalStep: 10,
-  needDefaultPointFigure: true,
-  needDefaultXAxisFigure: true,
-  needDefaultYAxisFigure: true,
-  createPointFigures: ({ coordinates }) => {
-    const texts = coordinates.map((coordinate, i) => ({
-      ...coordinate,
-      text: `(${i})`,
-      baseline: 'bottom'
-    }))
-    return [
-      {
-        type: 'line',
-        attrs: { coordinates }
-      },
-      {
-        type: 'text',
-        ignoreEvent: true,
-        attrs: texts
-      }
-    ]
+const eightWaves = (): ProOverlayTemplate => {
+  let properties: DeepPartial<OverlayProperties> = {}
+
+  const lineStyle = (): DeepPartial<LineStyle> => {
+    return {
+      style: properties.lineStyle,
+      size: properties.lineWidth,
+      color: properties.lineColor ?? properties.borderColor,
+      dashedValue: properties.lineDashedValue
+    }
+  }
+  const textStyle = (): DeepPartial<TextStyle> => {
+    return {
+      color: properties.textColor,
+      family: properties.textFont,
+      size: properties.textFontSize,
+      weight: properties.textFontWeight,
+      backgroundColor: properties.textBackgroundColor,
+      paddingLeft: properties.textPaddingLeft,
+      paddingRight: properties.textPaddingRight,
+      paddingTop: properties.textPaddingTop,
+      paddingBottom: properties.textPaddingBottom
+    }
+  }
+
+  return {
+    name: 'eightWaves',
+    totalStep: 10,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    createPointFigures: ({ coordinates }) => {
+      const texts = coordinates.map((coordinate, i) => ({
+        ...coordinate,
+        text: `(${i})`,
+        baseline: 'bottom'
+      }))
+      return [
+        {
+          type: 'line',
+          attrs: { coordinates },
+          styles: lineStyle()
+        },
+        {
+          type: 'text',
+          ignoreEvent: true,
+          attrs: texts,
+          styles: textStyle()
+        }
+      ]
+    },
+    setProperties: (_properties: DeepPartial<OverlayProperties>) => {
+      properties = loadash.merge({}, properties, _properties) as OverlayProperties
+    },
+    getProperties: (): DeepPartial<OverlayProperties> => {
+      return properties
+    }
   }
 }
 

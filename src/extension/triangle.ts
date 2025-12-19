@@ -12,27 +12,43 @@
  * limitations under the License.
  */
 
-import { OverlayTemplate } from 'klinecharts'
+import { DeepPartial, PolygonStyle } from 'klinecharts'
+import loadash from "lodash"
+import { OverlayProperties, ProOverlayTemplate } from '../types'
 
-const triangle: OverlayTemplate = {
-  name: 'triangle',
-  totalStep: 4,
-  needDefaultPointFigure: true,
-  needDefaultXAxisFigure: true,
-  needDefaultYAxisFigure: true,
-  styles: {
-    polygon: {
-      color: 'rgba(22, 119, 255, 0.15)'
+const triangle = (): ProOverlayTemplate => {
+  let properties: DeepPartial<OverlayProperties> = {}
+
+  let triangleStyle = (): DeepPartial<PolygonStyle> => {
+    return {
+      style: properties.style ?? 'stroke_fill',
+      color: properties.backgroundColor ?? 'rgba(22, 119, 255, 0.15)',
+      borderColor: properties.lineColor ?? properties.borderColor,
+      borderSize: properties.borderWidth,
+      borderStyle: properties.borderStyle ?? properties.lineStyle
     }
-  },
-  createPointFigures: ({ coordinates }) => {
-    return [
-      {
-        type: 'polygon',
-        attrs: { coordinates },
-        styles: { style: 'stroke_fill' }
-      }
-    ]
+  }
+  return {
+    name: 'triangle',
+    totalStep: 4,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    createPointFigures: ({ coordinates }) => {
+      return [
+        {
+          type: 'polygon',
+          attrs: { coordinates },
+          styles: triangleStyle()
+        }
+      ]
+    },
+    setProperties: (_properties: DeepPartial<OverlayProperties>) => {
+      properties = loadash.merge({}, properties, _properties) as OverlayProperties
+    },
+    getProperties: (): DeepPartial<OverlayProperties> => {
+      return properties
+    }
   }
 }
 

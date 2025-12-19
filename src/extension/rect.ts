@@ -12,37 +12,59 @@
  * limitations under the License.
  */
 
-import { OverlayTemplate } from 'klinecharts'
+import { DeepPartial, PolygonStyle } from 'klinecharts'
+import { OverlayProperties, ProOverlayTemplate } from '../types'
+import loadash from "lodash"
 
-const rect: OverlayTemplate = {
-  name: 'rect',
-  totalStep: 3,
-  needDefaultPointFigure: true,
-  needDefaultXAxisFigure: true,
-  needDefaultYAxisFigure: true,
-  styles: {
-    polygon: {
-      color: 'rgba(22, 119, 255, 0.15)'
+const rect = (): ProOverlayTemplate => {
+  let properties: Map<string, DeepPartial<OverlayProperties>> = new Map();
+
+  let rectStyle = (id: string): DeepPartial<PolygonStyle> => {
+    const property = properties.get(id);
+    return {
+      style: property!.style ?? 'stroke_fill',
+      color: property!.backgroundColor ?? 'rgba(22, 119, 255, 0.15)',
+      borderColor: property!.lineColor ?? property!.borderColor,
+      borderSize: property!.borderWidth,
+      borderStyle: property!.borderStyle ?? property!.lineStyle
     }
-  },
-  createPointFigures: ({ coordinates }) => {
-    if (coordinates.length > 1) {
-      return [
-        {
-          type: 'polygon',
-          attrs: {
-            coordinates: [
-              coordinates[0],
-              { x: coordinates[1].x, y: coordinates[0].y },
-              coordinates[1],
-              { x: coordinates[0].x, y: coordinates[1].y }
-            ]
-          },
-          styles: { style: 'stroke_fill' }
-        }
-      ]
+  }
+  return {
+    name: 'rect',
+    totalStep: 3,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    // styles: {
+    //   polygon: {
+    //     color: 'rgba(22, 119, 255, 0.15)'
+    //   }
+    // },
+    createPointFigures: ({ coordinates, overlay }) => {
+      if (coordinates.length > 1) {
+        return [
+          {
+            type: 'polygon',
+            attrs: {
+              coordinates: [
+                coordinates[0],
+                { x: coordinates[1].x, y: coordinates[0].y },
+                coordinates[1],
+                { x: coordinates[0].x, y: coordinates[1].y }
+              ]
+            },
+            styles: rectStyle(overlay.id)
+          }
+        ]
+      }
+      return []
+    },
+    setProperties: (_properties: DeepPartial<OverlayProperties>, id: string) => {
+      properties.set(id, loadash.merge({}, properties.get(id), _properties) as OverlayProperties)
+    },
+    getProperties: (id: string): DeepPartial<OverlayProperties> => {
+      return properties.get(id) ?? {}
     }
-    return []
   }
 }
 
