@@ -1,4 +1,5 @@
 import { Component, JSX } from "solid-js";
+import { getScreenSize } from "../../../helpers";
 
 export type PopupProps = {
   open?: boolean;
@@ -26,7 +27,8 @@ const Popup: Component<PopupProps> = (props) => {
   };
 
   if (typeof props.top === "number") {
-    styleObj["max-height"] = `${props.top - MARGIN}px`;
+    console.log('props.top', props.top);
+    styleObj["max-height"] = `${getScreenSize().y - props.top - MARGIN}px`;
     const topPx = Math.max(MARGIN, Math.min(props.top, vpH - MARGIN - 40));
     styleObj.top = `${topPx}px`;
     styleObj.transform = styleObj.transform ?? undefined;
