@@ -17,11 +17,14 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     align-items: center;
     .drag-handle {
-      width: 28px;
+      width: 10px;
       height: 34px;
       cursor: move;
       margin-left: 4px;
       border-radius: 4px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
     }
     .cr-action {
       position: relative;
@@ -29,7 +32,8 @@
       align-items: center;
       flex-direction: row;
       .cr-action-btn {
-        display: inline-flex;
+        display: flex;
+        flex-direction: column;
         width: 34px;
         height: 34px;
         align-items: center;
@@ -39,7 +43,21 @@
         background: transparent;
         transition: background 150ms;
         &:hover { background: var(--klinecharts-pro-hover-background-color); }
-        .cr-action-icon { color: var(--klinecharts-pro-text-color, #fff); }
+        .cr-action-icon {
+          color: var(--klinecharts-pro-text-color, #fff);
+          // svg {
+          //   height: 16px;
+          //   width: 16px;
+          // }
+        }
+        .cr-action-label {
+          height: 4px;
+          width: 26px;
+          margin-top: 5px;
+          font-size: 8px;
+          color: var(--klinecharts-pro-text-color, #fff);
+          border-radius: 1px;
+        }
       }
 
       .cr-editor {

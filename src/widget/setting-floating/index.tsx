@@ -6,14 +6,15 @@ import { useChartState } from "../../store/chartStateStore";
 import { setPopupOverlay, setShowOverlaySetting } from "../../store/overlaySettingStore";
 import { Color } from "../../component";
 import { Icon } from "../icons";
+import { ProOverlay } from "../../types";
 
-const { popOverlay, modifyOverlay } = useChartState()
+const { popOverlay, modifyOverlay, modifyOverlayProperties } = useChartState()
 
 export type FloatingAction = {
   key: string;
   title?: string;
   icon?: string;
-  visible?: boolean | ((overlay?: Overlay) => boolean);
+  visible?: boolean | ((overlay?: ProOverlay) => boolean);
   // optional inline editor type: 'color' | 'number' | 'select' | undefined
   editor?: {
     type: "color" | "number" | "select" | 'dropdown';
@@ -54,37 +55,51 @@ export default function Floating(props: FloatingProps) {
   // add a token to force recompute of actions when we perform changes
   const [actionsVersion, setActionsVersion] = createSignal(0)
 
-  const defaultActions = (overlay: Overlay): FloatingAction[] => {
+  const defaultActions = (overlay: ProOverlay): FloatingAction[] => {
     console.info('default actions called');
     return [
       { key: "group", title: "Group", icon: "templates", onClick: (id) => console.debug("group", id) },
       {
-        key: "background",
-        title: "Background color",
+        key: "border",
+        title: "Line tool color",
         icon: "edit",
         // try to read sensible defaults from overlay.styles if present
-        editor: { type: "color", value: overlay.styles?.circle?.color ?? "#000000" },
-        onClick: (id, v) => console.debug("set background", id, v)
+        editor: { type: "color", value: overlay.getProperties(overlay.id).lineColor ?? overlay.getProperties(overlay.id).borderColor ?? "#ffffff" },
+        onClick: (id, v) => {
+          console.debug("set border color", id, v)
+          modifyOverlayProperties(overlay.id, { lineColor: v})
+        }
+      },
+      {
+        key: "background",
+        title: "Line tool background",
+        icon: "fill",
+        // try to read sensible defaults from overlay.styles if present
+        editor: { type: "color", value: overlay.getProperties(overlay.id).backgroundColor ?? "#000000" },
+        onClick: (id, v) => {
+          console.debug("set background", id, v)
+          modifyOverlayProperties(overlay.id, { backgroundColor: v})
+        }
       },
       {
         key: "text",
-        title: "Text color",
+        title: "Line tool text color",
         icon: "text",
-        editor: { type: "color", value: overlay.styles?.text?.color ?? "#ffffff" },
+        editor: { type: "color", value: overlay.getProperties(overlay.id).textColor?? "#ffffff" },
         onClick: (id, v) => console.debug("set text color", id, v)
       },
       {
         key: "size",
-        title: "Size (px)",
+        title: "Line tool width (px)",
         icon: "line",
-        editor: { type: "number", value: overlay.styles?.line?.size ?? 2, min: 1, max: 50, step: 1 },
+        editor: { type: "number", value: overlay.getProperties(overlay.id).textFontSize ?? 2, min: 1, max: 50, step: 1 },
         onClick: (id, v) => console.debug("set size", id, v)
       },
       {
         key: "line",
-        title: "Line type",
+        title: "Line tool style",
         icon: (() => {
-          const style = overlay.styles?.line?.style ?? "solid"
+          const style = overlay.getProperties(overlay.id).lineStyle ?? "solid"
           ///@ts-expect-error
           return style === 'dashed' ? "lineDashed" : style === 'dotted' ? "lineDotted" : "line"
         })(),
@@ -102,7 +117,7 @@ export default function Floating(props: FloatingProps) {
         key: "lock",
         title: overlay && overlay.lock ? "Unlock" : "Lock",
         icon: overlay && overlay.lock ? "locked" : "unlocked",
-        visible: overlay.lock !== undefined ? !overlay.lock : true,
+        // visible: overlay.lock !== undefined ? !overlay.lock : true,
         onClick: (id) => modifyOverlay(id, { lock: !overlay.lock })
       },
       { key: "delete", title: "Delete", icon: "trash", onClick: (id) => popOverlay(id) },
@@ -148,8 +163,8 @@ export default function Floating(props: FloatingProps) {
     document.addEventListener("mousedown", onDocumentClick);
 
     if ((typeof props.x !== 'number' || typeof props.y !== 'number')) {
-      const defaultX = Math.max(8, window.innerWidth - 220 - 8);
-      const defaultY = 8;
+      const defaultX = Math.max(500, window.innerWidth/2);
+      const defaultY = 40;
       setLocalPos({ x: defaultX, y: defaultY });
     }
   });
@@ -250,9 +265,9 @@ export default function Floating(props: FloatingProps) {
                   }
                 }}
               >
-                <div class="cr-action-icon"><Icon name={act.icon} /></div>
+                <div class="cr-action-icon" style={{ height: act.editor?.type === 'color' ? '16px' : undefined, width: act.editor?.type === 'color' ? '16px' : undefined}}><Icon name={act.icon} /></div>
                 <Show when={act.editor?.type === "color"}>
-                  <div class="cr-action-value" style={{ 'background-color': act.editor?.value as string ?? '#000000' }}></div>
+                  <div class="cr-action-label" style={{ 'background-color': act.editor?.value as string }}></div>
                 </Show>
               </div>
 

@@ -20,7 +20,6 @@ import getXAxisSettings from './settings/xAxis'
 import getYAxisSettings from './settings/yAxis'
 import getGridSettings from './settings/grid'
 import getCrosshairSettings from './settings/crosshair'
-import getOverlaySettings from './settings/overlay'
 
 export function getOptions (locale: string) {
   const { size } = useDataSource(locale)
@@ -31,7 +30,6 @@ export function getOptions (locale: string) {
     ...getYAxisSettings(locale),
     ...getGridSettings(locale),
     ...getCrosshairSettings(locale),
-    ...getOverlaySettings(locale),
 
     // seperator
     {

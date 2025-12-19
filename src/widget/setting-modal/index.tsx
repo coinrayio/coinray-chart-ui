@@ -58,18 +58,18 @@ const SettingModal: Component<SettingModalProps> = props => {
     }
     
     console.info('update setting', option.key, newValue)
-    // const i = option.key.indexOf('.');
-    // const key = i === -1 ? option.key : option.key.slice(0, i) + '.bla' + option.key.slice(i);
+    const i = option.key.indexOf('.');
+    const key = i === -1 ? option.key : option.key.slice(0, i) + '.bla' + option.key.slice(i);
     lodashSet(chartObj.styleObj!, option.key, newValue)
     localStorage.setItem(`chartstatedata`, JSON.stringify(chartObj))
     setChartModified(true)
     const style = {}
-    // lodashSet(style, option.key, newValue)
+    lodashSet(style, option.key, newValue)
     lodashSet(style, option.key, newValue)
     const ss = utils.clone(styles())
     lodashSet(ss, option.key, newValue)
     setStyles(ss)
-    // setOptions(options().map(op => ({ ...op })))
+    setOptions(options().map(op => ({ ...op })))
     props.onChange(style)
   }
 
@@ -94,8 +94,7 @@ const SettingModal: Component<SettingModalProps> = props => {
     {text: 'X-axis', key: 'xAxis'},
     {text: 'Y-axis', key: 'yAxis'},
     {text: 'Separator', key: 'separator'},
-    {text: 'Crosshair', key: 'crosshair'},
-    {text: 'Overlay', key: 'overlay'},
+    {text: 'Crosshair', key: 'crosshair'}
   ]
 
   return (
