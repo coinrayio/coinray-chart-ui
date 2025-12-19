@@ -20,9 +20,8 @@ import i18n from '../../i18n'
 import { cloneDeep, isArray, set as lodashSet } from 'lodash'
 import { getOptions } from './options/options'
 import { getOverlayType, popupOtherInfo, popupOverlay, setPopupOverlay, setShowOverlaySetting } from '../../store/overlaySettingStore'
-import { useGetOverlayStyle, useSetOverlayStyle } from '../../store/overlayStyle/useOverlayStyles'
 import { Color, Input, Modal, Select, SelectDataSourceItem } from '../../component'
-import { ChartObjType } from '../../types'
+import { ChartObjType, ProOverlay } from '../../types'
 import { instanceapi } from '../../store/chartStore'
 import { useChartState } from '../../store/chartStateStore'
 
@@ -43,13 +42,13 @@ const OverlaySettingModal: Component<OverlaySettingModalProps> = props => {
                           ///@ts-expect-error
         return ovrly.styles[parentKey][key]
       } else {
-        return (useGetOverlayStyle[`${popupOtherInfo()?.overlayType}Style`]() as any)[parentKey][key]
+        // return (useGetOverlayStyle[`${popupOtherInfo()?.overlayType}Style`]() as any)[parentKey][key]
       }
     } else {
       if (popupOverlay()?.styles![key]) {
         return popupOverlay()?.styles![key]
       } else {
-        return (useGetOverlayStyle[`${popupOtherInfo()?.overlayType}Style`]() as any)[key]
+        // return (useGetOverlayStyle[`${popupOtherInfo()?.overlayType}Style`]() as any)[key]
       }
     }
   }
@@ -73,23 +72,23 @@ const OverlaySettingModal: Component<OverlaySettingModalProps> = props => {
       instanceapi()?.overrideOverlay({ id: popupOverlay()?.id, styles: updatedStyle})
       setPopupOverlay( (prevInstance) => instanceapi()?.getOverlayById(prevInstance?.id!) ?? prevInstance)
       if (popupOverlay())
-        useChartState().syncObject(popupOverlay()!)
+        useChartState().syncObject(popupOverlay()! as ProOverlay)
       instanceapi()?.setStyles(chartObj.styleObj ?? {})
       
       return updatedStyle
     }
     const name = popupOtherInfo()?.overlayType;
-    if (useSetOverlayStyle[`set${name}Style`])
-      useSetOverlayStyle[`set${name}Style`]((prevstyle) => perfomUpdate(prevstyle))
+    // if (useSetOverlayStyle[`set${name}Style`])
+    //   useSetOverlayStyle[`set${name}Style`]((prevstyle: any) => perfomUpdate(prevstyle))
   }
 
-  const style = useGetOverlayStyle[`${popupOtherInfo()?.overlayType}Style`] ? useGetOverlayStyle[`${popupOtherInfo()?.overlayType}Style`]() : undefined
+  // const style = useGetOverlayStyle[`${popupOtherInfo()?.overlayType}Style`] ? useGetOverlayStyle[`${popupOtherInfo()?.overlayType}Style`]() : undefined
   let optionkeys: string[] = []
   let outerkeys: string[] = []
-  if (style) {
+  // if (style) {
     optionkeys = Object.keys(options)
-    outerkeys = Object.keys(style)
-  }
+    // outerkeys = Object.keys(style)
+  // }
 
   return (
     <Modal

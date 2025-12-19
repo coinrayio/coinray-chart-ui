@@ -1,15 +1,9 @@
-import { Chart, DeepPartial, Indicator, IndicatorCreate, IndicatorTooltipData, Nullable, Overlay, OverlayCreate, OverlayEvent, OverlayStyle, PaneOptions, SmoothLineStyle, Styles, TooltipFeatureStyle, dispose } from 'klinecharts'
-import { ChartObjType, OrderInfo, OrderResource, OrderStylesType, ProChart, SymbolInfo } from "../types"
-import { createSignal } from "solid-js"
+import { DeepPartial, Indicator, IndicatorCreate, IndicatorTooltipData, Nullable, Overlay, OverlayCreate, OverlayEvent, PaneOptions, TooltipFeatureStyle } from 'klinecharts'
+import { ChartObjType, OverlayProperties, ProChart, ProOverlay } from "../types"
 import loadash from "lodash"
-import { Datafeed } from "../types"
-import { tickTimestamp } from "./tickStore"
-import { ctrlKeyedDown, timerid, widgetref } from "./keyEventStore"
-import { OtherTypes, overlayType, useOverlaySettings } from "./overlaySettingStore"
-import { buyLimitStyle, buyStopStyle, buyStyle, sellLimitStyle, sellStopStyle, sellStyle, setBuyLimitStyle, setBuyStopStyle, setBuyStyle, setSellLimitStyle, setSellStopStyle, setSellStyle, setStopLossStyle, setTakeProfitStyle, stopLossStyle, takeProfitStyle } from "./overlayStyle/positionStyleStore"
-import { straightLineStyle } from "./overlayStyle/inbuiltOverlayStyleStore"
-import { useGetOverlayStyle } from "./overlayStyle/useOverlayStyles"
-import { instanceapi, mainIndicators, PaneProperties, selectedOverlay, setChartModified, setMainIndicators, setSelectedOverlay, setStyles, setSubIndicators, subIndicators } from './chartStore'
+import { ctrlKeyedDown } from "./keyEventStore"
+import { overlayType, useOverlaySettings } from "./overlaySettingStore"
+import { instanceapi, mainIndicators, PaneProperties, setChartModified, setMainIndicators, setSelectedOverlay, setStyles, setSubIndicators, subIndicators } from './chartStore'
 
 export const documentResize = () => {
   instanceapi()?.resize()
@@ -135,7 +129,7 @@ export const useChartState = () => {
     return false
   }
   
-  const syncObject = (overlay: Overlay): boolean => {
+  const syncObject = (overlay: ProOverlay): boolean => {
     const chartStateObj = localStorage.getItem(`chartstatedata`)
     let chartObj: ChartObjType
     
@@ -207,7 +201,7 @@ export const useChartState = () => {
     return id
   }
 
-  const pushOverlay = (overlay: OverlayCreate, paneId?: string, redrawing = false) => {
+  const pushOverlay = (overlay: OverlayCreate & { properties?: DeepPartial<OverlayProperties> }, paneId?: string, redrawing = false) => {
     const id = (instanceapi()?.createOverlay({ ...overlay, paneId }) as Nullable<string>)
 
     if (!id)
@@ -229,29 +223,31 @@ export const useChartState = () => {
       return true
     }
     if (ovrly) {
-      const style = !redrawing && useGetOverlayStyle[`${ovrly.name}Style`] ? useGetOverlayStyle[`${ovrly.name}Style`]() : undefined
+      // const style = !redrawing && useGetOverlayStyle[`${ovrly.name}Style`] ? useGetOverlayStyle[`${ovrly.name}Style`]() : undefined
+      if (overlay.properties)
+      (ovrly as ProOverlay).setProperties(overlay.properties, id);
       instanceapi()?.overrideOverlay({
         id: ovrly.id,
-        styles: overlay.styles ?? style,
+        // styles: overlay.styles ?? style,
         onDrawEnd: (event) => {
           console.info('on draw end called')
           if (!['measure'].includes(ovrly.name))
-            return syncObject(event.overlay)
+            return syncObject(event.overlay as ProOverlay)
           return false
         },
         onPressedMoveEnd: (event) => {
           console.info('on pressed move end called')
           if (!['measure'].includes(ovrly.name))
-            return syncObject(event.overlay)
+            return syncObject(event.overlay as ProOverlay)
           return false
         },
-        onSelected: (event) => setSelectedOverlay(event.overlay),
+        onSelected: (event) => setSelectedOverlay(event.overlay as ProOverlay),
         onDeselected: () => setSelectedOverlay(null),
         onRightClick: ovrly.onRightClick ? ovrly.onRightClick : handleRightClick,
         onDoubleClick: ovrly.onDoubleClick ? ovrly.onDoubleClick : handleRightClick
       })
       if (!redrawing)
-        syncObject(ovrly)
+        syncObject(ovrly as ProOverlay)
     }
   }
 
@@ -282,6 +278,26 @@ export const useChartState = () => {
       localStorage.setItem(`chartstatedata`, JSON.stringify(chartObj))
       setChartModified(true)
       instanceapi()?.overrideOverlay({ ...modifyInfo, id })
+    }
+  }
+
+  const modifyOverlayProperties = (id: string, properties: DeepPartial<OverlayProperties>) => {
+    const chartStateObj = localStorage.getItem(`chartstatedata`)
+    if (chartStateObj) {
+      let chartObj: ChartObjType = JSON.parse(chartStateObj)
+
+      chartObj.overlays = chartObj.overlays?.map(overlay => {
+        if (overlay.value?.id === id) {
+          overlay.value.properties = { ...overlay.value.properties, ...properties }
+        }
+        return overlay
+      })
+      const ovrl = instanceapi()?.getOverlayById(id)
+      if (ovrl) {
+        (ovrl as ProOverlay).setProperties(properties, id)
+      }
+      localStorage.setItem(`chartstatedata`, JSON.stringify(chartObj))
+      setChartModified(true)
     }
   }
 
@@ -405,10 +421,6 @@ export const useChartState = () => {
           setSubIndicators(newSubIndicators)
         }, 500)
       }
-      if (chartObj.orderStyles) {
-        const styles = chartObj.orderStyles
-        syncOrderStyles(styles)
-      }
     }
 
     // if (chartsession()?.chart) {
@@ -439,186 +451,5 @@ export const useChartState = () => {
       setStyles(chartObj.styleObj)
   } 
 
-  return { createIndicator, modifyIndicator, popIndicator, syncIndiObject, syncObject, pushOverlay, modifyOverlay, popOverlay, pushMainIndicator, pushSubIndicator, restoreChartState }
-}
-
-const syncOrderStyles = (styles: OrderStylesType) => {
-  if (styles.buyStyle) {
-    setBuyStyle((prevbuystyle) => {
-      const buystyle = loadash.cloneDeep(prevbuystyle)
-      if (styles.buyStyle?.lineStyle) {
-        for (const key in styles.buyStyle.lineStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(buystyle, `lineStyle.${key}`, styles.buyStyle.lineStyle[key])
-            // buystyle.lineStyle[key] = styles.buyStyle.lineStyle[key]
-          }
-        }
-      }
-      if (styles.buyStyle?.labelStyle) {
-        for (const key in styles.buyStyle.labelStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(buystyle, `labelStyle.${key}`, styles.buyStyle.labelStyle[key])
-            // buystyle.labelStyle[key] = styles.buyStyle.labelStyle[key]
-          }
-        }
-      }
-      return buystyle
-    })
-  }
-  if (styles.buyLimitStyle) {
-    setBuyLimitStyle((prevBuyLimitStyle) => {
-      const buylimitstyle = loadash.cloneDeep(prevBuyLimitStyle)
-      if (styles.buyLimitStyle?.lineStyle) {
-        for (const key in styles.buyLimitStyle.lineStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(buylimitstyle, `lineStyle.${key}`, styles.buyLimitStyle.lineStyle[key])
-          }
-        }
-      }
-      if (styles.buyLimitStyle?.labelStyle) {
-        for (const key in styles.buyLimitStyle.labelStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(buylimitstyle, `labelStyle.${key}`, styles.buyLimitStyle.labelStyle[key])
-          }
-        }
-      }
-      return buylimitstyle
-    })
-  }
-  if (styles.buyStopStyle) {
-    setBuyStopStyle((prevbuystopstyle) => {
-      const buystopstyle = loadash.cloneDeep(prevbuystopstyle)
-      if (styles.buyStopStyle?.lineStyle) {
-        for (const key in styles.buyStopStyle.lineStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(buystopstyle, `lineStyle.${key}`, styles.buyStopStyle.lineStyle[key])
-          }
-        }
-      }
-      if (styles.buyStopStyle?.labelStyle) {
-        for (const key in styles.buyStopStyle.labelStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(buystopstyle, `labelStyle.${key}`, styles.buyStopStyle.labelStyle[key])
-          }
-        }
-      }
-      return buystopstyle
-    })
-  }
-  if (styles.sellStyle) {
-    setSellStyle((prevsellstyle) => {
-      const sellstyle = loadash.cloneDeep(prevsellstyle)
-      if (styles.sellStyle?.lineStyle) {
-        for (const key in styles.sellStyle.lineStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(sellstyle, `lineStyle.${key}`, styles.sellStyle.lineStyle[key])
-          }
-        }
-      }
-      if (styles.sellStyle?.labelStyle) {
-        for (const key in styles.sellStyle.labelStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(sellstyle, `labelStyle.${key}`, styles.sellStyle.labelStyle[key])
-          }
-        }
-      }
-      return sellstyle
-    })
-  }
-  if (styles.sellLimitStyle) {
-    setSellLimitStyle((prevselllimitstyle) => {
-      const selllimitstyle = loadash.cloneDeep(prevselllimitstyle)
-      if (styles.sellLimitStyle?.lineStyle) {
-        for (const key in styles.sellLimitStyle.lineStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(selllimitstyle, `lineStyle.${key}`, styles.sellLimitStyle.lineStyle[key])
-          }
-        }
-      }
-      if (styles.sellLimitStyle?.labelStyle) {
-        for (const key in styles.sellLimitStyle.labelStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(selllimitstyle, `labelStyle.${key}`, styles.sellLimitStyle.labelStyle[key])
-          }
-        }
-      }
-      return selllimitstyle
-    })
-  }
-  if (styles.sellStopStyle) {
-    setSellStopStyle((prevsellstopstyle) => {
-      const sellstopstyle = loadash.cloneDeep(prevsellstopstyle)
-      if (styles.sellStopStyle?.lineStyle) {
-        for (const key in styles.sellStopStyle.lineStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(sellstopstyle, `lineStyle.${key}`, styles.sellStopStyle.lineStyle[key])
-          }
-        }
-      }
-      if (styles.sellStopStyle?.labelStyle) {
-        for (const key in styles.sellStopStyle.labelStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(sellstopstyle, `labelStyle.${key}`, styles.sellStopStyle.labelStyle[key])
-          }
-        }
-      }
-      return sellstopstyle
-    })
-  }
-  if (styles.stopLossStyle) {
-    setStopLossStyle((prevstoplossstyle) => {
-      const stoplossstyle = loadash.cloneDeep(prevstoplossstyle)
-      if (styles.stopLossStyle?.lineStyle) {
-        for (const key in styles.stopLossStyle.lineStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(stoplossstyle, `lineStyle.${key}`, styles.stopLossStyle.lineStyle[key])
-          }
-        }
-      }
-      if (styles.stopLossStyle?.labelStyle) {
-        for (const key in styles.stopLossStyle.labelStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(stoplossstyle, `labelStyle.${key}`, styles.stopLossStyle.labelStyle[key])
-          }
-        }
-      }
-      return stoplossstyle
-    })
-  }
-  if (styles.takeProfitStyle) {
-    setTakeProfitStyle((prevtakeprofitstyle) => {    
-      const takeprofitstyle = loadash.cloneDeep(takeProfitStyle())
-      if (styles.takeProfitStyle?.lineStyle) {
-        for (const key in styles.takeProfitStyle.lineStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(takeprofitstyle, `lineStyle.${key}`, styles.takeProfitStyle.lineStyle[key])
-          }
-        }
-      }
-      if (styles.takeProfitStyle?.labelStyle) {
-        for (const key in styles.takeProfitStyle.labelStyle) {
-          if (key !== undefined) {
-            //@ts-expect-error
-            set(takeprofitstyle, `labelStyle.${key}`, styles.takeProfitStyle.labelStyle[key])
-          }
-        }
-      }
-      return takeprofitstyle
-    })
-  }
+  return { createIndicator, modifyIndicator, popIndicator, syncIndiObject, syncObject, pushOverlay, modifyOverlay, modifyOverlayProperties, popOverlay, pushMainIndicator, pushSubIndicator, restoreChartState }
 }

@@ -13,7 +13,7 @@
  */
 
 import { KLineData, Styles, DeepPartial, Nullable, Chart, DataLoader, Period as DefaultPeriod, IndicatorCreate, PaneOptions, OverlayCreate, FigureCreate, PickRequired, OverlayFilter, Overlay } from 'klinecharts'
-import { OrderOverlay } from './overlayTypes'
+import { OrderOverlay, OverlayProperties, ProOverlayCreate } from './overlayTypes'
 import { PaneProperties } from '../store/chartStore'
 
 
@@ -100,7 +100,7 @@ type IndicatorsType = {
 }
 
 type OverlaysType = {
-  value?: OverlayCreate,
+  value?: ProOverlayCreate,
   paneId: string
 }
 

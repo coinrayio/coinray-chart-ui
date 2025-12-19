@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js"
-import { ChartDataLoaderType, ChartPro, ChartProOptions, Datafeed, Period, ProChart, SymbolInfo } from "../types"
+import { ChartDataLoaderType, ChartPro, ChartProOptions, Datafeed, Period, ProChart, ProOverlay, SymbolInfo } from "../types"
 import { DeepPartial, LineStyle, Nullable, Overlay, PathStyle, PolygonStyle, RectStyle, Styles } from "klinecharts"
 import { Color } from "chroma-js"
 
@@ -41,4 +41,4 @@ export const [fullScreen, setFullScreen] = createSignal(false)
 export const [range, setRange] = createSignal(1)
 export const [datafeed, setDatafeed] = createSignal<Datafeed>()
 
-export const [selectedOverlay, setSelectedOverlay] = createSignal<Nullable<Overlay>>(null)
+export const [selectedOverlay, setSelectedOverlay] = createSignal<Nullable<ProOverlay>>(null)
