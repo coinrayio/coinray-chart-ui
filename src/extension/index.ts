@@ -18,9 +18,10 @@ import abcd from './abcd'
 import xabcd from './xabcd'
 
 import positionLine from './position/orderLine'
+import brush from './brush'
 
 const overlays = [
-  arrow(),
+  arrow(), brush(),
   circle(), rect(), triangle(), parallelogram(),
   fibonacciCircle(), fibonacciSegment(), fibonacciSpiral(),
   fibonacciSpeedResistanceFan(), fibonacciExtension(), gannBox(),
