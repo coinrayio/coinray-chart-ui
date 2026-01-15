@@ -20,11 +20,11 @@ import xabcd from './xabcd'
 import positionLine from './position/orderLine'
 
 const overlays = [
-  arrow,
-  circle, rect, triangle, parallelogram,
-  fibonacciCircle, fibonacciSegment, fibonacciSpiral,
-  fibonacciSpeedResistanceFan, fibonacciExtension, gannBox,
-  threeWaves, fiveWaves, eightWaves, anyWaves, abcd, xabcd,
+  arrow(),
+  circle(), rect(), triangle(), parallelogram(),
+  fibonacciCircle(), fibonacciSegment(), fibonacciSpiral(),
+  fibonacciSpeedResistanceFan(), fibonacciExtension(), gannBox(),
+  threeWaves(), fiveWaves(), eightWaves(), anyWaves(), abcd(), xabcd(),
   positionLine(),
 ]
 

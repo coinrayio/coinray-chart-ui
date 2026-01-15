@@ -12,34 +12,57 @@
  * limitations under the License.
  */
 
-import { OverlayTemplate } from 'klinecharts'
+import { DeepPartial, PolygonStyle } from 'klinecharts'
 
 import { getDistance } from './utils'
+import { OverlayProperties, ProOverlayTemplate } from '../types'
+import loadash from "lodash"
 
-const circle: OverlayTemplate = {
-  name: 'circle',
-  totalStep: 3,
-  needDefaultPointFigure: true,
-  needDefaultXAxisFigure: true,
-  needDefaultYAxisFigure: true,
-  styles: {
-    circle: {
-      color: 'rgba(22, 119, 255, 0.15)'
+const circle = (): ProOverlayTemplate => {
+  let properties: Map<string, DeepPartial<OverlayProperties>> = new Map();
+
+  let circleStyle = (id: string): DeepPartial<PolygonStyle> => {
+    const property = properties.get(id);
+    return {
+      style: property?.style ?? 'stroke_fill',
+      color: property?.backgroundColor ?? 'rgba(22, 119, 255, 0.15)',
+      borderColor: property?.lineColor ?? property?.borderColor,
+      borderSize: property?.borderWidth,
+      borderStyle: property?.borderStyle ?? property?.lineStyle
     }
-  },
-  createPointFigures: ({ coordinates }) => {
-    if (coordinates.length > 1) {
-      const radius = getDistance(coordinates[0], coordinates[1])
-      return {
-        type: 'circle',
-        attrs: {
-          ...coordinates[0],
-          r: radius
-        },
-        styles: { style: 'stroke_fill' }
+  }
+
+  return {
+    name: 'circle',
+    totalStep: 3,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    // styles: {
+    //   circle: {
+    //     color: 'rgba(22, 119, 255, 0.15)'
+    //   }
+    // },
+    createPointFigures: ({ coordinates, overlay }) => {
+      if (coordinates.length > 1) {
+        const radius = getDistance(coordinates[0], coordinates[1])
+        return {
+          type: 'circle',
+          attrs: {
+            ...coordinates[0],
+            r: radius
+          },
+          styles: circleStyle(overlay.id)
+        }
       }
+      return []
+    },
+    setProperties: (_properties: DeepPartial<OverlayProperties>, id: string) => {
+      properties.set(id, loadash.merge({}, properties.get(id), _properties) as OverlayProperties)
+    },
+    getProperties: (id: string): DeepPartial<OverlayProperties> => {
+      return properties.get(id) ?? {}
     }
-    return []
   }
 }
 

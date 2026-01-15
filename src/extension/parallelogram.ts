@@ -12,53 +12,79 @@
  * limitations under the License.
  */
 
-import { OverlayTemplate } from 'klinecharts'
+import { DeepPartial, LineStyle, OverlayTemplate, PolygonStyle } from 'klinecharts'
+import loadash from "lodash"
+import { OverlayProperties, ProOverlayTemplate } from '../types'
 
-const parallelogram: OverlayTemplate = {
-  name: 'parallelogram',
-  totalStep: 4,
-  needDefaultPointFigure: true,
-  needDefaultXAxisFigure: true,
-  needDefaultYAxisFigure: true,
-  styles: {
-    polygon: {
-      color: 'rgba(22, 119, 255, 0.15)'
+const parallelogram = (): ProOverlayTemplate => {
+  let properties: DeepPartial<OverlayProperties> = {}
+
+  let polygonStyle = (): DeepPartial<PolygonStyle> => {
+    return {
+      style: properties.style ?? 'stroke_fill',
+      color: properties.backgroundColor ?? 'rgba(22, 119, 255, 0.15)',
+      borderColor: properties.lineColor ?? properties.borderColor,
+      borderSize: properties.borderWidth,
+      borderStyle: properties.borderStyle ?? properties.lineStyle
     }
-  },
-  createPointFigures: ({ coordinates }) => {
-    if (coordinates.length === 2) {
-      return [
-        {
-          type: 'line',
-          ignoreEvent: true,
-          attrs: { coordinates }
-        }
-      ]
+  }
+  const lineStyle = (): DeepPartial<LineStyle> => {
+    return {
+      style: properties.lineStyle,
+      size: properties.lineWidth,
+      color: properties.lineColor ?? properties.borderColor,
+      dashedValue: properties.lineDashedValue
     }
-    if (coordinates.length === 3) {
-      const coordinate = { x: coordinates[0].x + (coordinates[2].x - coordinates[1].x), y: coordinates[2].y }
-      return [
-        {
-          type: 'polygon',
-          attrs: { coordinates: [coordinates[0], coordinates[1], coordinates[2], coordinate] },
-          styles: { style: 'stroke_fill' }
-        }
-      ]
-    }
-    return []
-  },
-  performEventPressedMove: ({ points, performPointIndex, performPoint }) => {
-    if (performPointIndex < 2) {
-      // @ts-expect-error
-      points[0].price = performPoint.price
-      // @ts-expect-error
-      points[1].price = performPoint.price
-    }
-  },
-  performEventMoveForDrawing: ({ currentStep, points, performPoint }) => {
-    if (currentStep === 2) {
-      // @ts-expect-error
-      points[0].price = performPoint.price
+  }
+
+  return {
+    name: 'parallelogram',
+    totalStep: 4,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    createPointFigures: ({ coordinates }) => {
+      if (coordinates.length === 2) {
+        return [
+          {
+            type: 'line',
+            ignoreEvent: true,
+            attrs: { coordinates },
+            styles: lineStyle()
+          }
+        ]
+      }
+      if (coordinates.length === 3) {
+        const coordinate = { x: coordinates[0].x + (coordinates[2].x - coordinates[1].x), y: coordinates[2].y }
+        return [
+          {
+            type: 'polygon',
+            attrs: { coordinates: [coordinates[0], coordinates[1], coordinates[2], coordinate] },
+            styles: polygonStyle()
+          }
+        ]
+      }
+      return []
+    },
+    performEventPressedMove: ({ points, performPointIndex, performPoint }) => {
+      if (performPointIndex < 2) {
+        // @ts-expect-error
+        points[0].price = performPoint.price
+        // @ts-expect-error
+        points[1].price = performPoint.price
+      }
+    },
+    performEventMoveForDrawing: ({ currentStep, points, performPoint }) => {
+      if (currentStep === 2) {
+        // @ts-expect-error
+        points[0].price = performPoint.price
+      }
+    },
+    setProperties: (_properties: DeepPartial<OverlayProperties>) => {
+      properties = loadash.merge({}, properties, _properties) as OverlayProperties
+    },
+    getProperties: (): DeepPartial<OverlayProperties> => {
+      return properties
     }
   }
 }

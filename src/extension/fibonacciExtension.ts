@@ -12,63 +12,106 @@
  * limitations under the License.
  */
 
-import { OverlayTemplate, LineAttrs, TextAttrs } from 'klinecharts'
+import { LineAttrs, TextAttrs, DeepPartial, LineStyle, TextStyle } from 'klinecharts'
+import loadash from "lodash"
+import { OverlayProperties, ProOverlayTemplate } from '../types'
 
-const fibonacciExtension: OverlayTemplate = {
-  name: 'fibonacciExtension',
-  totalStep: 4,
-  needDefaultPointFigure: true,
-  needDefaultXAxisFigure: true,
-  needDefaultYAxisFigure: true,
-  createPointFigures: ({ chart, yAxis, coordinates, overlay }) => {
-    const fbLines: LineAttrs[] = []
-    const texts: TextAttrs[] = []
-    if (coordinates.length > 2) {
-      let precision = 0
-      const symbol = chart.getSymbol()
-      if ((yAxis?.isInCandle() ?? true) && symbol) {
-        precision = symbol.pricePrecision
-      } else {
-        const indicators = chart.getIndicators({ paneId: overlay.paneId })
-        indicators.forEach(indicator => {
-          precision = Math.max(precision, indicator.precision)
-        })
-      }
-      const points = overlay.points
-      // @ts-expect-error
-      const valueDif = points[1].value - points[0].value
-      const yDif = coordinates[1].y - coordinates[0].y
-      const percents = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
-      const textX = coordinates[2].x > coordinates[1].x ? coordinates[1].x : coordinates[2].x
-      percents.forEach(percent => {
-        const y = coordinates[2].y + yDif * percent
-        // @ts-expect-error
-        const price = (points[2].value + valueDif * percent).toFixed(precision.price)
-        fbLines.push({ coordinates: [{ x: coordinates[1].x, y }, { x: coordinates[2].x, y }] })
-        texts.push({
-          x: textX,
-          y,
-          text: `${price} (${(percent * 100).toFixed(1)}%)`,
-          baseline: 'bottom'
-        })
-      })
+const fibonacciExtension = (): ProOverlayTemplate => {
+  let properties: DeepPartial<OverlayProperties> = {}
+
+  const diagLineStyle = (): DeepPartial<LineStyle> => {
+    return {
+      style: 'dashed',
+      size: properties.lineWidth,
+      color: properties.lineColor ?? properties.borderColor,
+      dashedValue: properties.lineDashedValue
     }
-    return [
-      {
-        type: 'line',
-        attrs: { coordinates },
-        styles: { style: 'dashed' }
-      },
-      {
-        type: 'line',
-        attrs: fbLines
-      },
-      {
-        type: 'text',
-        ignoreEvent: true,
-        attrs: texts
+  } 
+  const fbLinesStyle = (): DeepPartial<LineStyle> => {
+    return {
+      style: properties.lineStyle ?? 'solid',
+      size: properties.lineWidth,
+      color: properties.lineColor ?? properties.borderColor,
+      dashedValue: properties.lineDashedValue
+    }
+  }
+  const textStyle = (): DeepPartial<TextStyle> => {
+    return {
+      color: properties.textColor,
+      family: properties.textFont,
+      size: properties.textFontSize,
+      weight: properties.textFontWeight,
+      backgroundColor: properties.textBackgroundColor,
+      paddingLeft: properties.textPaddingLeft,
+      paddingRight: properties.textPaddingRight,
+      paddingTop: properties.textPaddingTop,
+      paddingBottom: properties.textPaddingBottom
+    }
+  }
+  return {
+    name: 'fibonacciExtension',
+    totalStep: 4,
+    needDefaultPointFigure: true,
+    needDefaultXAxisFigure: true,
+    needDefaultYAxisFigure: true,
+    createPointFigures: ({ chart, yAxis, coordinates, overlay }) => {
+      const fbLines: LineAttrs[] = []
+      const texts: TextAttrs[] = []
+      if (coordinates.length > 2) {
+        let precision = 0
+        const symbol = chart.getSymbol()
+        if ((yAxis?.isInCandle() ?? true) && symbol) {
+          precision = symbol.pricePrecision
+        } else {
+          const indicators = chart.getIndicators({ paneId: overlay.paneId })
+          indicators.forEach(indicator => {
+            precision = Math.max(precision, indicator.precision)
+          })
+        }
+        const points = overlay.points
+        // @ts-expect-error
+        const valueDif = points[1].value - points[0].value
+        const yDif = coordinates[1].y - coordinates[0].y
+        const percents = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]
+        const textX = coordinates[2].x > coordinates[1].x ? coordinates[1].x : coordinates[2].x
+        percents.forEach(percent => {
+          const y = coordinates[2].y + yDif * percent
+          // @ts-expect-error
+          const price = (points[2].value + valueDif * percent).toFixed(precision.price)
+          fbLines.push({ coordinates: [{ x: coordinates[1].x, y }, { x: coordinates[2].x, y }] })
+          texts.push({
+            x: textX,
+            y,
+            text: `${price} (${(percent * 100).toFixed(1)}%)`,
+            baseline: 'bottom'
+          })
+        })
       }
-    ]
+      return [
+        {
+          type: 'line',
+          attrs: { coordinates },
+          styles: diagLineStyle()
+        },
+        {
+          type: 'line',
+          attrs: fbLines,
+          styles: fbLinesStyle()
+        },
+        {
+          type: 'text',
+          ignoreEvent: true,
+          attrs: texts,
+          styles: textStyle()
+        }
+      ]
+    },
+    setProperties: (_properties: DeepPartial<OverlayProperties>) => {
+      properties = loadash.merge({}, properties, _properties) as OverlayProperties
+    },
+    getProperties: (): DeepPartial<OverlayProperties> => {
+      return properties
+    }
   }
 }
 

@@ -14,9 +14,10 @@
 
 import { Coordinate, LineStyle, LineType, OverlayEvent, Point, TextStyle, utils } from 'klinecharts'
 import { OrderLineProperties, OrderOverlay, OrderOverlayCreate, OverlayEventListenerParams } from '../../types/overlayTypes'
-import { buyStyle } from '../../store/overlayStyle/positionStyleStore'
+// import { buyStyle } from '../../store/overlayStyle/positionStyleStore'
 import { convertFontweightNameToNumber, getPrecision } from '../../helpers'
 import { FontWeights } from "../../types/types"
+import { positionStyle } from '../../store/overlayStyle/inbuiltOverlayStyleStore'
 // import { useOverlaySettings } from '../../../store/overlaySettingStore'
 
 const executeCallback = (listener?: OverlayEventListenerParams, event?: OverlayEvent<unknown>) => {
@@ -36,30 +37,30 @@ const OrderLine = (): OrderOverlayCreate => {
 
   const lineStyle = (): LineStyle => {
     return {
-      style: properties.lineStyle ?? buyStyle().lineStyle.style,
-      size: properties.lineWidth ?? buyStyle().lineStyle.size,
-      color: properties.lineColor ?? buyStyle().lineStyle.color,
-      dashedValue: properties.lineDashedValue ?? buyStyle().lineStyle.dashedValue
+      style: properties.lineStyle ?? positionStyle.lineStyle.style,
+      size: properties.lineWidth ?? positionStyle.lineStyle.size,
+      color: properties.lineColor ?? positionStyle.lineStyle.color,
+      dashedValue: properties.lineDashedValue ?? positionStyle.lineStyle.dashedValue
     }
   }
 
   const labelStyle = (type: 'body'|'quantity'|'cancel-button'): TextStyle => {
     return {
-      style: buyStyle().labelStyle.style,
-      size: (type == 'body' ? properties.bodySize : type == 'quantity' ? properties.quantitySize : properties.cancelButtonSize) ?? properties.bodySize ?? buyStyle().labelStyle.size,
-      weight: (type == 'body' ? properties.bodyWeight : type == 'quantity' ? properties.quantityWeight : properties.cancelButtonWeight) ?? properties.bodyWeight ?? buyStyle().labelStyle.weight,
-      family: (type == 'body' ? properties.bodyFont : type == 'quantity' ? properties.quantityFont : 'icomoon') ?? properties.bodyFont ?? buyStyle().labelStyle.family,
-      color: (type == 'body' ? properties.bodyTextColor : type == 'quantity' ? properties.quantityColor : properties.cancelButtonIconColor) ?? properties.bodyTextColor ?? buyStyle().labelStyle.color,
-      backgroundColor: (type == 'body' ? properties.bodyBackgroundColor : type == 'quantity' ? properties.quantityBackgroundColor : properties.cancelButtonBackgroundColor) ?? properties.bodyBackgroundColor ?? buyStyle().labelStyle.backgroundColor,
-      borderColor: (type == 'body' ? properties.bodyBorderColor : type == 'quantity' ? properties.quantityBorderColor : properties.cancelButtonBorderColor) ?? properties.bodyBorderColor ?? buyStyle().labelStyle.borderColor,
-      borderStyle: properties.borderStyle ?? buyStyle().labelStyle.borderStyle,
-      borderSize: properties.borderSize ?? buyStyle().labelStyle.borderSize,
-      borderDashedValue: properties.borderDashedValue ?? buyStyle().labelStyle.borderDashedValue,
-      borderRadius: properties.borderRadius ?? buyStyle().labelStyle.borderRadius,
-      paddingLeft: (type == 'body' ? properties.bodyPaddingLeft : type == 'quantity' ? properties.quantityPaddingLeft : properties.cancelButtonPaddingLeft) ?? properties.bodyPaddingLeft ?? buyStyle().labelStyle.paddingLeft,
-      paddingRight: (type == 'body' ? properties.bodyPaddingRight : type == 'quantity' ? properties.quantityPaddingRight : properties.cancelButtonPaddingRight) ?? properties.bodyPaddingRight ?? buyStyle().labelStyle.paddingRight,
-      paddingTop: (type == 'body' ? properties.bodyPaddingTop : type == 'quantity' ? properties.quantityPaddingTop : properties.cancelButtonPaddingTop) ?? properties.bodyPaddingTop ?? buyStyle().labelStyle.paddingTop,
-      paddingBottom: (type == 'body' ? properties.bodyPaddingBottom : type == 'quantity' ? properties.quantityPaddingBottom : properties.cancelButtonPaddingBottom) ?? properties.bodyPaddingBottom ?? buyStyle().labelStyle.paddingBottom
+      style: positionStyle.labelStyle.style,
+      size: (type == 'body' ? properties.bodySize : type == 'quantity' ? properties.quantitySize : properties.cancelButtonSize) ?? properties.bodySize ?? positionStyle.labelStyle.size,
+      weight: (type == 'body' ? properties.bodyWeight : type == 'quantity' ? properties.quantityWeight : properties.cancelButtonWeight) ?? properties.bodyWeight ?? positionStyle.labelStyle.weight,
+      family: (type == 'body' ? properties.bodyFont : type == 'quantity' ? properties.quantityFont : 'icomoon') ?? properties.bodyFont ?? positionStyle.labelStyle.family,
+      color: (type == 'body' ? properties.bodyTextColor : type == 'quantity' ? properties.quantityColor : properties.cancelButtonIconColor) ?? properties.bodyTextColor ?? positionStyle.labelStyle.color,
+      backgroundColor: (type == 'body' ? properties.bodyBackgroundColor : type == 'quantity' ? properties.quantityBackgroundColor : properties.cancelButtonBackgroundColor) ?? properties.bodyBackgroundColor ?? positionStyle.labelStyle.backgroundColor,
+      borderColor: (type == 'body' ? properties.bodyBorderColor : type == 'quantity' ? properties.quantityBorderColor : properties.cancelButtonBorderColor) ?? properties.bodyBorderColor ?? positionStyle.labelStyle.borderColor,
+      borderStyle: properties.borderStyle ?? positionStyle.labelStyle.borderStyle,
+      borderSize: properties.borderSize ?? positionStyle.labelStyle.borderSize,
+      borderDashedValue: properties.borderDashedValue ?? positionStyle.labelStyle.borderDashedValue,
+      borderRadius: properties.borderRadius ?? positionStyle.labelStyle.borderRadius,
+      paddingLeft: (type == 'body' ? properties.bodyPaddingLeft : type == 'quantity' ? properties.quantityPaddingLeft : properties.cancelButtonPaddingLeft) ?? properties.bodyPaddingLeft ?? positionStyle.labelStyle.paddingLeft,
+      paddingRight: (type == 'body' ? properties.bodyPaddingRight : type == 'quantity' ? properties.quantityPaddingRight : properties.cancelButtonPaddingRight) ?? properties.bodyPaddingRight ?? positionStyle.labelStyle.paddingRight,
+      paddingTop: (type == 'body' ? properties.bodyPaddingTop : type == 'quantity' ? properties.quantityPaddingTop : properties.cancelButtonPaddingTop) ?? properties.bodyPaddingTop ?? positionStyle.labelStyle.paddingTop,
+      paddingBottom: (type == 'body' ? properties.bodyPaddingBottom : type == 'quantity' ? properties.quantityPaddingBottom : properties.cancelButtonPaddingBottom) ?? properties.bodyPaddingBottom ?? positionStyle.labelStyle.paddingBottom
   }}
 
   return {
@@ -76,7 +77,7 @@ const OrderLine = (): OrderOverlayCreate => {
       const quantityText = (properties.quantity ?? 'Size').toString()
       const bodyText = properties.text ?? 'Position Line'
       const cancelMarginRight = properties.marginRight
-      const quantityMarginRight = utils.calcTextWidth(cancelText) + cancelStyle.paddingLeft + cancelStyle.paddingRight + cancelMarginRight - (properties.borderSize ?? buyStyle().labelStyle.borderSize)
+      const quantityMarginRight = utils.calcTextWidth(cancelText) + cancelStyle.paddingLeft + cancelStyle.paddingRight + cancelMarginRight - (properties.borderSize ?? positionStyle.labelStyle.borderSize)
       const bodyMarginRight = utils.calcTextWidth((quantityText).toString()) + quantityStyle.paddingLeft + quantityStyle.paddingRight + quantityMarginRight
       const lineMarginRight = utils.calcTextWidth((bodyText).toString()) + bodyStyle.paddingLeft + bodyStyle.paddingRight + bodyMarginRight
 
