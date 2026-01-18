@@ -108,7 +108,6 @@ export default class Chart implements ProChart
     return this._chart.resize();
   }
 
-
   /**
    * Store Proxy Methods
    */

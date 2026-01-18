@@ -59,6 +59,7 @@ import remove from './remove'
 import type { SelectDataSourceItem } from '../../../component'
 
 import i18n from '../../../i18n'
+import brush from './brush'
 
 export const mapping = {
   horizontalStraightLine,
@@ -97,7 +98,8 @@ export const mapping = {
   unlock,
   visible,
   invisible,
-  remove
+  remove,
+  brush
 }
 
 export function createSingleLineOptions (locale: string): SelectDataSourceItem[] {
@@ -112,6 +114,7 @@ export function createSingleLineOptions (locale: string): SelectDataSourceItem[]
     { key: 'rayLine', text: i18n('ray_line', locale) },
     { key: 'segment', text: i18n('segment', locale) },
     { key: 'arrow', text: i18n('arrow', locale) },
+    { key: 'brush', text: i18n('brush', locale) },
     { key: 'priceLine', text: i18n('price_line', locale) }
   ]
 }
