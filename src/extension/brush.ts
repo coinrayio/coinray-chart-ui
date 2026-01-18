@@ -1,7 +1,10 @@
-import { Coordinate, LineAttrs, LineStyle, OverlayTemplate, SmoothLineStyle } from "klinecharts";
-import _ from "lodash";
+import { DeepPartial, LineAttrs, SmoothLineStyle } from "klinecharts";
+import { OverlayProperties, ProOverlayTemplate } from "../types";
+import loadash from "lodash"
 
-const brush = (): OverlayTemplate => {
+const brush = (): ProOverlayTemplate => {
+  let properties: DeepPartial<OverlayProperties> = {}
+
   return {
     name: "brush",
     totalStep: 3,
@@ -15,7 +18,6 @@ const brush = (): OverlayTemplate => {
         const filteredCoords = coordinates.filter((_, i) => i !== 1)
 
         lines.push({ coordinates: filteredCoords })
-        console.info("brush - createPointFigures - lines", filteredCoords, 'and coordinates', coordinates);
       }
 
       return [
@@ -28,9 +30,14 @@ const brush = (): OverlayTemplate => {
     },
     performEventMoveForDrawing: ({ currentStep, points, performPoint }) => {
       if (currentStep >= 2) {
-        console.info("brush - performEventMoveForDrawing before", { currentStep, points, performPoint: { ...performPoint } });
         points.push(performPoint);
       }
+    },
+    setProperties: (_properties: DeepPartial<OverlayProperties>) => {
+      properties = loadash.merge({}, properties, _properties) as OverlayProperties
+    },
+    getProperties: (): DeepPartial<OverlayProperties> => {
+      return properties
     }
   }
 };
