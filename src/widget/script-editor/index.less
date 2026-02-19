@@ -1,0 +1,135 @@
+@import (reference) '../../base.less';
+
+.cr-script-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 820px;
+  height: 540px;
+
+  .cr-se-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+
+    .left,
+    .right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 6px 10px;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--klinecharts-pro-text-color);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      &.primary {
+        background: var(--klinecharts-pro-primary-color);
+        color: white;
+        border: none;
+      }
+    }
+
+    .font-select {
+      background: transparent;
+      color: var(--klinecharts-pro-text-color);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 4px 6px;
+      border-radius: 4px;
+    }
+  }
+
+  .cr-se-body {
+    display: flex;
+    gap: 10px;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .cr-se-editor {
+    display: flex;
+    background: var(--klinecharts-pro-popup-background-color, rgba(0, 0, 0, 0.6));
+    border-radius: 4px;
+    flex: 1 1 60%;
+    min-width: 420px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+
+    .gutter {
+      background: rgba(0, 0, 0, 0.12);
+      padding: 8px 6px;
+      color: rgba(255, 255, 255, 0.5);
+      user-select: none;
+
+      .ln {
+        height: 1.6em;
+        line-height: 1.6em;
+        font-family: monospace;
+        font-size: 12px;
+      }
+    }
+
+    .code {
+      flex: 1;
+      padding: 8px;
+      background: transparent;
+      border: none;
+      color: var(--klinecharts-pro-text-color);
+      outline: none;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+      resize: none;
+      line-height: 1.6;
+      white-space: pre;
+      overflow: auto;
+    }
+  }
+
+  .cr-se-output {
+    flex: 1 1 40%;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    overflow: hidden;
+
+    .cr-se-output-header {
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.06);
+      color: var(--klinecharts-pro-text-color);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .cr-se-output-body {
+      padding: 8px;
+      flex: 1;
+      overflow: auto;
+
+      pre {
+        margin: 0;
+        color: var(--klinecharts-pro-text-color);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .diagnostic {
+        color: #ff6b6b;
+      }
+
+      .output {
+        color: rgba(255, 255, 255, 0.75);
+      }
+    }
+  }
+}
